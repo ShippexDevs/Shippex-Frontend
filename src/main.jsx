@@ -1,0 +1,40 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+
+import "./index.css";
+import App from "./App.jsx";
+
+import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+
+        <CartProvider>
+
+          <App />
+
+          <Toaster
+            position="top-center"
+            reverseOrder={false}
+            gutter={10}
+            toastOptions={{
+              duration: 3000,
+              style: {
+                borderRadius: "16px",
+                padding: "14px",
+                fontSize: "15px",
+              },
+            }}
+          />
+
+        </CartProvider>
+
+      </AuthProvider>
+    </BrowserRouter>
+  </StrictMode>
+);
