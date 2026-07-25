@@ -5,7 +5,7 @@ import PageHeader from "../components/common/PageHeader";
 import EmptyCart from "../components/cart/EmptyCart";
 import CartItem from "../components/cart/CartItem";
 import CartSummary from "../components/cart/CartSummary";
-import StickyActionBar from "../components/common/StickyActionBar";
+import StickyActionBar from "../components/common/StickyActionbar";
 
 import { useCart } from "../context/CartContext";
 

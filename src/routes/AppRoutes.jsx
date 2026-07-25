@@ -14,7 +14,7 @@ import RegisterPage from "../pages/RegisterPage";
 import LoginPage from "../pages/LoginPage";
 import ProtectedRoute from "../components/auth/ProtectedRoutes";
 
-import ScrollToTop from "../components/common/ScrollTotop";
+import ScrollToTop from "../components/common/ScrollToTop";
 
 function AppRoutes() {
   return (

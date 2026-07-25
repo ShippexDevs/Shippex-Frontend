@@ -4,7 +4,7 @@ import { categories } from "../data/categories";
 import { products } from "../data/products";
 
 import PageHeader from "../components/common/PageHeader";
-import SearchBar from "../components/common/SearchBar";
+import SearchBar from "../components/common/Searchbar";
 import ProductSection from "../components/product/ProductSection";
 
 function CategoryProductsPage() {

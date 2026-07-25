@@ -6,7 +6,7 @@ import ShipDetailsCard from "../components/checkout/ShipDetailsCard";
 import ArrivalDetailsCard from "../components/checkout/ArrivalDetailsCard";
 import SpecialInstructionsCard from "../components/checkout/SpecialInstructionsCard";
 import OrderSummaryCard from "../components/checkout/OrderSummaryCard";
-import StickyActionBar from "../components/common/StickyActionBar";
+import StickyActionBar from "../components/common/StickyActionbar";
 
 import { useCart } from "../context/CartContext";
 

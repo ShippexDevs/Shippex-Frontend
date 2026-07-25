@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { products } from "../data/products";
 
 import PageHeader from "../components/common/PageHeader";
-import AddToCartButton from "../components/product/AddToCartButton";
+import AddToCartButton from "../components/product/AddTocartButton";
 
 import { formatPrice } from "../utils/formatPrice";
 
