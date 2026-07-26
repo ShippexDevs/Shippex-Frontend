@@ -17,7 +17,10 @@ function QuantitySelector({
       "
     >
       <button
-        onClick={onDecrease}
+        onClick={(event) => {
+          event.stopPropagation();
+          onDecrease();
+        }}
         className="
           h-10
           w-10
@@ -35,7 +38,10 @@ function QuantitySelector({
       </span>
 
       <button
-        onClick={onIncrease}
+        onClick={(event) => {
+          event.stopPropagation();
+          onIncrease();
+        }}
         className="
           h-10
           w-10

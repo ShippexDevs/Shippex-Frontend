@@ -5,32 +5,37 @@ const CartContext = createContext(null);
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
 
-  function addToCart(product, quantity) {
-    setCartItems((currentItems) => {
-      const existingItem = currentItems.find(
-        (item) => item.id === product.id
-      );
+function addToCart(product, quantity) {
+  
 
-      if (existingItem) {
-        return currentItems.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + quantity,
-              }
-            : item
-        );
-      }
-
-      return [
-        ...currentItems,
-        {
-          ...product,
-          quantity,
-        },
-      ];
-    });
+  if (quantity == null || quantity <= 0) {
+    throw new Error("addToCart requires a valid quantity.");
   }
+
+  setCartItems((currentItems) => {
+    const existingItem = currentItems.find(
+      (item) => item.id === product.id
+    );
+
+    if (existingItem) {
+      return currentItems.map((item) =>
+        item.id === product.id
+          ? {
+              ...item,
+              quantity: item.quantity + quantity,
+            }
+          : item
+      );
+    }
+    return [
+      ...currentItems,
+      {
+        ...product,
+        quantity,
+      },
+    ];
+  });
+}
 
   function removeFromCart(productId) {
     setCartItems((currentItems) =>
@@ -59,6 +64,11 @@ export function CartProvider({ children }) {
   function clearCart() {
     setCartItems([]);
   }
+  function isProductInCart(productId) {
+  return cartItems.some(
+    (item) => item.id === productId
+  );
+}
 
   const totalItems = useMemo(() => {
     return cartItems.reduce(
@@ -80,6 +90,7 @@ export function CartProvider({ children }) {
     removeFromCart,
     updateQuantity,
     clearCart,
+    isProductInCart,
     totalItems,
     subtotal,
   };

@@ -1,7 +1,7 @@
-import { useRef, useState } from "react";
 
 import { useCart } from "../../context/CartContext";
 import { formatPrice } from "../../utils/formatPrice";
+import toast from "react-hot-toast";
 
 
 
@@ -10,11 +10,8 @@ function AddToCartButton({ product }) {
     cartItems,
     addToCart,
     updateQuantity,
+    isProductInCart,
   } = useCart();
-
-  const [showToast, setShowToast] = useState(false);
-
-  const toastTimer = useRef(null);
 
   const cartItem = cartItems.find(
     (item) => item.id === product.id
@@ -22,19 +19,18 @@ function AddToCartButton({ product }) {
 
   const quantity = cartItem?.quantity ?? 0;
 
-  function handleAddToCart() {
-    addToCart(product, 1);
+function handleAddToCart() {
+  const alreadyInCart =
+    isProductInCart(product.id);
 
-    if (toastTimer.current) {
-      clearTimeout(toastTimer.current);
-    }
+  addToCart(product, 1);
 
-    setShowToast(true);
-
-    toastTimer.current = setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
+  if (!alreadyInCart) {
+    toast.success(
+      `${product.name} added to cart`
+    );
   }
+}
 
   return (
     <>
