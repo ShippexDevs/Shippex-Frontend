@@ -12,89 +12,65 @@ import RequestSubmittedPage from "../pages/RequestSubmittedPage";
 import RequestTrackingPage from "../pages/RequestTrackingPage";
 import RegisterPage from "../pages/RegisterPage";
 import LoginPage from "../pages/LoginPage";
-import ProtectedRoute from "../components/auth/ProtectedRoutes";
 
+import ProtectedRoute from "../components/auth/ProtectedRoutes";
 import ScrollToTop from "../components/common/ScrollToTop";
 
+import AdminLoginPage from "../admin/pages/AdminLoginPage";
+import AdminHomePage from "../admin/pages/AdminHomePage";
+import ChangePasswordPage from "../admin/pages/ChangePasswordPage";
+
 function AppRoutes() {
-  return (
-    <>
-      <ScrollToTop />
 
-      <Routes>
+    return (
+        <>
+            <ScrollToTop />
 
-        {/* Public Routes */}
+            <Routes>
 
-        <Route
-          path="/"
-          element={<HomePage />}
-        />
+                {/* Public Routes */}
 
-        <Route
-          path="/categories"
-          element={<CategoriesPage />}
-        />
+                <Route path="/" element={<HomePage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/categories/:slug" element={<CategoryProductsPage />} />
+                <Route path="/product/:id" element={<ProductDetailsPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/login" element={<LoginPage />} />
 
-        <Route
-          path="/categories/:slug"
-          element={<CategoryProductsPage />}
-        />
+                {/* Admin Routes */}
 
-        <Route
-          path="/product/:id"
-          element={<ProductDetailsPage />}
-        />
+                <Route
+                    path="/admin/login"
+                    element={<AdminLoginPage />}
+                />
 
-        <Route
-          path="/register"
-          element={<RegisterPage />}
-        />
+                <Route
+                    path="/admin/home"
+                    element={<AdminHomePage />}
+                />
 
-        <Route
-          path="/login"
-          element={<LoginPage />}
-        />
+                <Route
+                    path="/admin/change-password"
+                    element={<ChangePasswordPage />}
+                />
 
-        {/* Protected Routes */}
+                {/* Customer Protected Routes */}
 
-        <Route element={<ProtectedRoute />}>
+                <Route element={<ProtectedRoute />}>
 
-          <Route
-            path="/cart"
-            element={<CartPage />}
-          />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/request-submitted" element={<RequestSubmittedPage />} />
+                    <Route path="/requests/:requestId" element={<RequestTrackingPage />} />
 
-          <Route
-            path="/orders"
-            element={<OrdersPage />}
-          />
+                </Route>
 
-          <Route
-            path="/profile"
-            element={<ProfilePage />}
-          />
+            </Routes>
 
-          <Route
-            path="/checkout"
-            element={<CheckoutPage />}
-          />
-
-          <Route
-            path="/request-submitted"
-            element={<RequestSubmittedPage />}
-          />
-
-          <Route
-            path="/requests/:requestId"
-            element={<RequestTrackingPage />}
-          />
-
-        </Route>
-
-      </Routes>
-
-    </>
-  );
+        </>
+    );
 }
 
 export default AppRoutes;
