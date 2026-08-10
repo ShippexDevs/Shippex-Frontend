@@ -19,6 +19,8 @@ import ScrollToTop from "../components/common/ScrollToTop";
 import AdminLoginPage from "../admin/pages/AdminLoginPage";
 import AdminHomePage from "../admin/pages/AdminHomePage";
 import ChangePasswordPage from "../admin/pages/ChangePasswordPage";
+import AdminProtectedRoute
+    from "../admin/components/auth/AdminProtectedRoute";
 
 function AppRoutes() {
 
@@ -44,15 +46,19 @@ function AppRoutes() {
                     element={<AdminLoginPage />}
                 />
 
-                <Route
-                    path="/admin/home"
-                    element={<AdminHomePage />}
-                />
+                <Route element={<AdminProtectedRoute />}>
 
-                <Route
-                    path="/admin/change-password"
-                    element={<ChangePasswordPage />}
-                />
+                    <Route
+                        path="/admin/home"
+                        element={<AdminHomePage />}
+                    />
+
+                    <Route
+                        path="/admin/change-password"
+                        element={<ChangePasswordPage />}
+                    />
+
+                </Route>
 
                 {/* Customer Protected Routes */}
 

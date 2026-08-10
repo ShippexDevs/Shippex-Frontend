@@ -12,3 +12,18 @@ export const loginAdmin = async (loginRequest) => {
     return response.data;
 
 };
+
+export const changeAdminPassword = async (passwordData, token) => {
+
+    const response = await axios.post(
+        `${BASE_URL}/auth/change-password`,
+        passwordData,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    );
+
+    return response.data;
+};
