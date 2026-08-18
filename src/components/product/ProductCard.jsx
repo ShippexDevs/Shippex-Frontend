@@ -6,6 +6,7 @@ import QuantitySelector from "../product/QuantitySelector";
 import toast from "react-hot-toast";
 
 function ProductCard({ product }) {
+
   const navigate = useNavigate();
 
   const {
@@ -25,136 +26,181 @@ function ProductCard({ product }) {
     navigate(`/product/${product.id}`);
   };
 
-const handleAddClick = (event) => {
-  event.stopPropagation();
+  const handleAddClick = (event) => {
 
-  const alreadyInCart =
-    isProductInCart(product.id);
+    event.stopPropagation();
 
-  addToCart(product, 1);
+    const alreadyInCart =
+      isProductInCart(product.id);
 
-  if (!alreadyInCart) {
-    toast.success(
-      `${product.name} added to cart`
-    );
-  }
-};
+    addToCart(product, 1);
+
+    if (!alreadyInCart) {
+
+      toast.success(
+        `${product.name} added to cart`
+      );
+
+    }
+  };
+
   return (
     <div
       onClick={handleCardClick}
       className="
+        min-w-[140px]
         cursor-pointer
-        rounded-3xl
+        rounded-2xl
         bg-white
         p-3
-        shadow-md
+        shadow-sm
         transition-all
         duration-300
         hover:-translate-y-1
-        hover:shadow-xl
+        hover:shadow-md
       "
     >
-      {/* Rating */}
-      <div className="flex justify-end">
-        <span
-          className="
-            rounded-full
-            bg-yellow-100
-            px-2
-            py-1
-            text-xs
-            font-semibold
-          "
-        >
-          ⭐ {product.rating}
-        </span>
-      </div>
 
       {/* Product Image */}
-      <div className="mt-2 flex justify-center">
-        <img
-          src={product.image}
-          alt={product.name}
+
+      <div className="relative flex justify-center">
+
+        <div
           className="
+            flex
             h-32
-            w-32
-            object-contain
-            transition-transform
-            duration-300
-            hover:scale-105
-          "
-        />
-      </div>
-
-      {/* Product Info */}
-      <div className="mt-5">
-        <p className="text-xs text-slate-500">
-          {product.category}
-        </p>
-
-        <h3
-          className="
-            mt-1
-            line-clamp-2
-            text-base
-            font-bold
+            w-full
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-slate-200
+            bg-white
           "
         >
-          {product.name}
-        </h3>
 
-        <p className="mt-1 text-sm text-slate-500">
-          {product.unit}
-        </p>
+          <img
+            src={product.image}
+            alt={product.name}
+            className="
+              h-28
+              w-28
+              object-contain
+              transition-transform
+              duration-300
+              hover:scale-105
+            "
+          />
+
+        </div>
+
+        {/* Add Button */}
+
+        {quantity === 0 ? (
+
+          <button
+            onClick={handleAddClick}
+            className="
+              absolute
+              bottom-1
+              right-1
+              rounded-lg
+              border
+              border-pink-500
+              bg-white
+              px-3
+              py-1
+              text-xs
+              font-bold
+              text-pink-500
+              transition
+              hover:bg-pink-50
+              active:scale-95
+            "
+          >
+            ADD
+          </button>
+
+        ) : (
+
+          <div className="absolute bottom-1 right-1">
+
+            <QuantitySelector
+              quantity={quantity}
+              onIncrease={() =>
+                updateQuantity(
+                  product.id,
+                  quantity + 1
+                )
+              }
+              onDecrease={() =>
+                updateQuantity(
+                  product.id,
+                  quantity - 1
+                )
+              }
+            />
+
+          </div>
+
+        )}
+
       </div>
 
       {/* Price */}
-      <div className="mt-5 flex items-center justify-between">
-        <div>
-          <p className="text-lg font-bold text-[#0A2342]">
+
+      <div className="mt-3">
+
+        <div className="flex items-center gap-2">
+
+          <p className="text-base font-bold text-[#0A2342]">
             {formatPrice(
               product.price,
               product.currency
             )}
           </p>
+
+          {product.originalPrice && (
+            <p className="text-xs text-slate-400 line-through">
+              {formatPrice(
+                product.originalPrice,
+                product.currency
+              )}
+            </p>
+          )}
+
         </div>
 
-        {quantity === 0 ? (
-          <button
-            onClick={handleAddClick}
-            className="
-              rounded-xl
-              bg-[#0A2342]
-              px-4
-              py-2
-              text-sm
-              font-semibold
-              text-white
-              transition
-              hover:bg-[#133B63]
-              active:scale-95
-            "
-          >
-            + Add
-          </button>
-        ) : (
-          <QuantitySelector
-            quantity={quantity}
-            onIncrease={() =>
-              updateQuantity(
-                product.id,
-                quantity + 1
-              )
-            }
-            onDecrease={() =>
-              updateQuantity(
-                product.id,
-                quantity - 1
-              )
-            }
-          />
-        )}
       </div>
+
+      {/* Product Name */}
+
+      <h3
+        className="
+          mt-2
+          line-clamp-2
+          text-sm
+          font-semibold
+          text-slate-800
+        "
+      >
+        {product.name}
+      </h3>
+
+      {/* Brand */}
+
+      {product.brand && (
+        <p className="mt-1 text-xs text-slate-500">
+          {product.brand}
+        </p>
+      )}
+
+      {/* Unit */}
+
+      <p className="mt-1 text-xs text-slate-500">
+        {product.unit}
+      </p>
+
     </div>
   );
 }

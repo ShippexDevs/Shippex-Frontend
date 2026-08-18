@@ -16,9 +16,7 @@ function ProductSection({
         />
       )}
 
-      <ProductGrid
-        products={products}
-      />
+      <ProductGrid products={products} />
     </section>
   );
 }

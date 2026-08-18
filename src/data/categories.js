@@ -7,6 +7,7 @@ import {
   Package,
   Shield,
   Smartphone,
+  Candy,
 } from "lucide-react";
 
 export const categories = [
@@ -80,5 +81,14 @@ export const categories = [
     icon: Smartphone,
     image: null,
     description: "Electronic accessories and gadgets.",
+  },
+
+  {
+    id: 9,
+    name: "Chocolates",
+    slug: "chocolates",
+    icon: Candy,
+    image: null,
+    description: "Rich and delicious chocolates for every craving.",
   },
 ];

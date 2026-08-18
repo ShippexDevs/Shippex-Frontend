@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-import { products } from "../data/products";
+import { getProductById } from "../services/productApi";
 
 import PageHeader from "../components/common/PageHeader";
 import AddToCartButton from "../components/product/AddTocartButton";
@@ -8,21 +9,92 @@ import AddToCartButton from "../components/product/AddTocartButton";
 import { formatPrice } from "../utils/formatPrice";
 
 function ProductDetailsPage() {
+
   const { id } = useParams();
 
-  const product = products.find(
-    (item) => item.id === id
-  );
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!product) {
+  useEffect(() => {
+
+    const fetchProduct = async () => {
+
+      try {
+
+        setLoading(true);
+        setError(null);
+
+        const data = await getProductById(id);
+
+        console.log("Mapped product:", data);
+
+        setProduct(data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to fetch product:",
+          error
+        );
+
+        setError(
+          "Unable to load product details."
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+    };
+
+    fetchProduct();
+
+  }, [id]);
+
+
+  if (loading) {
+
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h2 className="text-2xl font-semibold">
-          Product not found
-        </h2>
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F8FA]">
+
+        <p className="text-slate-500">
+          Loading product...
+        </p>
+
       </div>
     );
   }
+
+
+  if (error) {
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F8FA]">
+
+        <h2 className="text-xl font-semibold">
+          {error}
+        </h2>
+
+      </div>
+    );
+  }
+
+
+  if (!product) {
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F8FA]">
+
+        <h2 className="text-2xl font-semibold">
+          Product not found
+        </h2>
+
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-[#F5F8FA]">
@@ -34,17 +106,84 @@ function ProductDetailsPage() {
           subtitle={product.category}
         />
 
-        {/* Product Image */}
 
-        <div className="overflow-hidden rounded-3xl bg-white shadow-md">
+        {/* Product Images */}
+
+<div className="mt-6">
+
+  {product.images?.length > 1 ? (
+
+    <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory rounded-3xl bg-white p-4 shadow-md">
+
+      {product.images.map((image, index) => (
+
+        <div
+          key={image}
+          className="
+            min-w-full
+            snap-center
+            overflow-hidden
+            rounded-2xl
+            bg-slate-50
+          "
+        >
 
           <img
-            src={product.image}
-            alt={product.name}
-            className="h-96 w-full object-cover"
+            src={image}
+            alt={`${product.name} ${index + 1}`}
+            className="
+              h-96
+              w-full
+              object-contain
+              p-6
+            "
           />
 
         </div>
+
+      ))}
+
+    </div>
+
+  ) : product.images?.length === 1 ? (
+
+    <div className="overflow-hidden rounded-3xl bg-white shadow-md">
+
+      <img
+        src={product.images[0]}
+        alt={product.name}
+        className="
+          h-96
+          w-full
+          object-contain
+          p-6
+        "
+      />
+
+    </div>
+
+  ) : (
+
+    <div className="
+      flex
+      h-96
+      items-center
+      justify-center
+      rounded-3xl
+      bg-white
+      shadow-md
+    ">
+
+      <p className="text-slate-400">
+        No image available
+      </p>
+
+    </div>
+
+  )}
+
+</div>
+
 
         {/* Product Information */}
 
@@ -54,11 +193,18 @@ function ProductDetailsPage() {
 
             <div>
 
-              <h2 className="text-3xl font-bold">
+              {product.brand && (
+                <p className="text-sm font-medium text-slate-500">
+                  {product.brand}
+                </p>
+              )}
+
+              <h2 className="mt-1 text-3xl font-bold">
                 {product.name}
               </h2>
 
-              <div className="mt-4 flex gap-3">
+
+              <div className="mt-4 flex flex-wrap gap-3">
 
                 <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium">
                   ⭐ {product.rating}
@@ -72,46 +218,76 @@ function ProductDetailsPage() {
 
             </div>
 
-            <span className="text-3xl font-bold text-[#0A2342]">
-              {formatPrice(
-                product.price,
-                product.currency
+
+            {/* Price */}
+
+            <div className="text-right">
+
+              <p className="text-3xl font-bold text-[#0A2342]">
+                {formatPrice(
+                  product.price,
+                  product.currency
+                )}
+              </p>
+
+              {product.originalPrice &&
+                product.originalPrice > product.price && (
+
+                <p className="mt-1 text-sm text-slate-400 line-through">
+                  {formatPrice(
+                    product.originalPrice,
+                    product.currency
+                  )}
+                </p>
+
               )}
-            </span>
+
+            </div>
 
           </div>
+
 
           {/* Description */}
 
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
+          {product.description && (
 
-            <h3 className="mb-3 text-lg font-semibold">
-              Description
-            </h3>
+            <div className="rounded-2xl bg-white p-5 shadow-sm">
 
-            <p className="leading-7 text-slate-600">
-              {product.description}
-            </p>
+              <h3 className="mb-3 text-lg font-semibold">
+                Description
+              </h3>
 
-          </div>
+              <p className="leading-7 text-slate-600">
+                {product.description}
+              </p>
+
+            </div>
+
+          )}
+
 
           {/* Delivery */}
 
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
+          {product.deliveryTime && (
 
-            <h3 className="font-semibold">
-              Delivery Time
-            </h3>
+            <div className="rounded-2xl bg-white p-5 shadow-sm">
 
-            <p className="mt-2 text-slate-500">
-              {product.deliveryTime}
-            </p>
+              <h3 className="font-semibold">
+                Delivery Time
+              </h3>
 
-          </div>
+              <p className="mt-2 text-slate-500">
+                {product.deliveryTime}
+              </p>
+
+            </div>
+
+          )}
 
         </section>
 
       </div>
+
 
       {/* Sticky Footer */}
 

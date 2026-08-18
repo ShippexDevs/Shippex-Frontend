@@ -1,23 +1,27 @@
 import ProductCard from "./ProductCard";
 
-function ProductGrid({ products = [] }) {
+function ProductGrid({ products }) {
+
   return (
     <div
       className="
-        grid
-        grid-cols-2
+        flex
         gap-4
-        md:grid-cols-3
-        lg:grid-cols-4
-        xl:grid-cols-5
+        overflow-x-auto
+        pb-2
+        scrollbar-hide
       "
     >
+
       {products.map((product) => (
-        <ProductCard
+        <div
           key={product.id}
-          product={product}
-        />
+          className="w-[150px] shrink-0"
+        >
+          <ProductCard product={product} />
+        </div>
       ))}
+
     </div>
   );
 }

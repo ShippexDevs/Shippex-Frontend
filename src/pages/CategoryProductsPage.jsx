@@ -1,22 +1,62 @@
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import { categories } from "../data/categories";
-import { products } from "../data/products";
+import { getProductsByCategorySlug } from "../services/productApi";
 
 import PageHeader from "../components/common/PageHeader";
 import SearchBar from "../components/common/Searchbar";
 import ProductSection from "../components/product/ProductSection";
 
 function CategoryProductsPage() {
+
   const { slug } = useParams();
 
   const category = categories.find(
     (item) => item.slug === slug
   );
 
-  const filteredProducts = products.filter(
-    (product) => product.categorySlug === slug
-  );
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+
+    const fetchProducts = async () => {
+
+      try {
+
+        setLoading(true);
+        setError(null);
+
+        const data =
+          await getProductsByCategorySlug(slug);
+
+        setProducts(data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to fetch category products:",
+          error
+        );
+
+        setError(
+          "Unable to load products."
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+    };
+
+    if (slug) {
+      fetchProducts();
+    }
+
+  }, [slug]);
 
   if (!category) {
     return (
@@ -30,6 +70,7 @@ function CategoryProductsPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F8FA]">
+
       <div className="mx-auto max-w-7xl px-5 py-6">
 
         <PageHeader
@@ -42,7 +83,11 @@ function CategoryProductsPage() {
         <div className="mt-5 mb-8 flex items-center justify-between">
 
           <p className="text-sm text-slate-500">
-            {filteredProducts.length} Products
+
+            {loading
+              ? "Loading products..."
+              : `${products.length} Products`}
+
           </p>
 
           <button
@@ -62,10 +107,40 @@ function CategoryProductsPage() {
 
         </div>
 
-        <ProductSection
-          products={filteredProducts}
-          showHeader={false}
-        />
+        {loading && (
+          <div className="py-10 text-center">
+            <p className="text-slate-500">
+              Loading products...
+            </p>
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="py-10 text-center">
+            <p className="text-red-500">
+              {error}
+            </p>
+          </div>
+        )}
+
+        {!loading &&
+          !error &&
+          products.length === 0 && (
+            <div className="py-10 text-center">
+              <p className="text-slate-500">
+                No products found in this category.
+              </p>
+            </div>
+          )}
+
+        {!loading &&
+          !error &&
+          products.length > 0 && (
+            <ProductSection
+              products={products}
+              showHeader={false}
+            />
+          )}
 
       </div>
     </div>
