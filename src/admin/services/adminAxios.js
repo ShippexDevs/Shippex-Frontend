@@ -1,23 +1,31 @@
 import axios from "axios";
-import { clearAdminAuth } from "./tokenStorage.js";
+
+import {
+    clearAdminAuth,
+    getAdminToken
+} from "./tokenStorage.js";
 
 const adminAxios = axios.create({
+
     baseURL: "http://localhost:8080",
+
     headers: {
         "Content-Type": "application/json"
     }
+
 });
 
 adminAxios.interceptors.request.use(
+
     (config) => {
 
-        const token =
-            localStorage.getItem("adminAccessToken");
+        const token = getAdminToken();
 
         if (token) {
 
             config.headers.Authorization =
                 `Bearer ${token}`;
+
         }
 
         return config;
@@ -26,9 +34,11 @@ adminAxios.interceptors.request.use(
     (error) => {
         return Promise.reject(error);
     }
+
 );
 
 adminAxios.interceptors.response.use(
+
     (response) => {
         return response;
     },
@@ -39,21 +49,20 @@ adminAxios.interceptors.response.use(
 
             clearAdminAuth();
 
-            /*
-             * Avoid redirecting repeatedly if we're
-             * already on the admin login page.
-             */
             if (
                 window.location.pathname !==
                 "/admin/login"
             ) {
+
                 window.location.href =
                     "/admin/login";
+
             }
         }
 
         return Promise.reject(error);
     }
+
 );
 
 export default adminAxios;
