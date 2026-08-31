@@ -193,70 +193,9 @@ The frontend Docker image is automatically built and published to **GitHub Conta
 
 Published Docker image:
 
-```text
+
 ghcr.io/shippexdevs/shippex-frontend:latest
 
-# 📸 Current Screens
-
-- Home
-- Categories
-- Product Details
-- Register
-- Login
-- Profile
-- Cart
-- Checkout
-- Orders
-
----
-
-# 📌 Current Status
-
-Completed
-
-- User Registration
-- Login
-- JWT Authentication
-- Protected Routes
-- Profile Integration
-- Logout
-- Docker Support
-
-Upcoming
-
-- Forgot Password
-- Profile Update
-- Persistent Cart
-- Order Placement
-- Order Tracking
-- Payment Integration
-- Admin Dashboard
-
----
-
-# 🤝 Contributing
-
-1. Create a feature branch
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-2. Commit your changes
-
-```bash
-git commit -m "feat: add new feature"
-```
-
-3. Push the branch
-
-```bash
-git push origin feature/your-feature-name
-```
-
-4. Open a Pull Request
-
----
 
 # 👨‍💻 Developed By
 
