@@ -252,7 +252,6 @@ git push origin feature/your-feature-name
 ```bash
 docker compose up -d --pull always
 
----
 
 # 👨‍💻 Developed By
 
