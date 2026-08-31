@@ -1,0 +1,7 @@
+services:
+  frontend:
+    image: ghcr.io/shippexdevs/my-frontend:latest
+    container_name: shippex-frontend
+    ports:
+      - "5173:5173"
+    restart: unless-stopped

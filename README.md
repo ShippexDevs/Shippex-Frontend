@@ -247,6 +247,13 @@ git push origin feature/your-feature-name
 
 ---
 
+### Run the Published Image
+
+```bash
+docker compose up -d --pull always
+
+---
+
 # 👨‍💻 Developed By
 
 **Santojeet and Zunaid**
