@@ -195,6 +195,7 @@ Published Docker image:
 
 
 ghcr.io/shippexdevs/shippex-frontend:latest
+docker run -d --name shippex-frontend -p 5173:5173 ghcr.io/shippexdevs/shippex-frontend:latest
 
 
 # 👨‍💻 Developed By
