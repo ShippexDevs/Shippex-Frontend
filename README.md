@@ -185,6 +185,17 @@ docker compose restart
 
 ---
 
+---
+
+# 🤖 GitHub Actions & Docker Image Publishing
+
+The frontend Docker image is automatically built and published to **GitHub Container Registry (GHCR)** whenever changes are pushed to the `main` branch.
+
+Published Docker image:
+
+```text
+ghcr.io/shippexdevs/shippex-frontend:latest
+
 # 📸 Current Screens
 
 - Home
@@ -246,12 +257,6 @@ git push origin feature/your-feature-name
 4. Open a Pull Request
 
 ---
-
-### Run the Published Image
-
-```bash
-docker compose up -d --pull always
-
 
 # 👨‍💻 Developed By
 
