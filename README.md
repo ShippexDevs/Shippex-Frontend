@@ -193,8 +193,8 @@ The frontend Docker image is automatically built and published to **GitHub Conta
 
 Published Docker image:
 
-
 ghcr.io/shippexdevs/shippex-frontend:latest
+
 docker run -d --name shippex-frontend -p 5173:5173 ghcr.io/shippexdevs/shippex-frontend:latest
 
 
