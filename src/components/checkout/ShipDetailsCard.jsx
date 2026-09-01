@@ -8,158 +8,138 @@ import {
 import { currentShip } from "../../data/currentShip";
 
 function ShipDetailsCard() {
+  const details = [
+    {
+      label: "Ship Name",
+      value: currentShip.shipName,
+      icon: Ship,
+    },
+    {
+      label: "IMO Number",
+      value: currentShip.imoNumber,
+      icon: Hash,
+    },
+    {
+      label: "Dock",
+      value: currentShip.dockNumber,
+      icon: Anchor,
+    },
+    {
+      label: "Port",
+      value: currentShip.portName,
+      icon: MapPin,
+    },
+  ];
+
   return (
-    <section
-      className="
-        rounded-3xl
-        bg-white
-        p-6
-        shadow-md
-      "
-    >
-      <h2 className="text-xl font-bold text-[#0A2342]">
-        Delivery Destination
-      </h2>
+    <section className="
+      rounded-2xl
+      border
+      border-slate-200
+      bg-white
+      p-5
+      sm:p-6
+    ">
 
-      <p className="mt-1 text-sm text-slate-500">
-        This information is linked to your assigned vessel.
-      </p>
+      <div className="flex items-start gap-3">
 
-      <div className="mt-6 space-y-5">
-
-        {/* Ship Name */}
-
-        <div className="flex items-start gap-4">
-
-          <div
-            className="
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-2xl
-              bg-cyan-100
-            "
-          >
-            <Ship
-              size={22}
-              className="text-[#0F6E8C]"
-            />
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              Ship Name
-            </p>
-
-            <h3 className="font-semibold">
-              {currentShip.shipName}
-            </h3>
-          </div>
-
+        <div className="
+          flex
+          h-10
+          w-10
+          shrink-0
+          items-center
+          justify-center
+          rounded-xl
+          bg-[#EAF7F8]
+        ">
+          <Ship
+            size={19}
+            className="text-[#087E8B]"
+          />
         </div>
 
-        {/* IMO */}
+        <div>
+          <h2 className="
+            text-base
+            font-bold
+            text-[#102A43]
+          ">
+            Vessel Details
+          </h2>
 
-        <div className="flex items-start gap-4">
-
-          <div
-            className="
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-2xl
-              bg-cyan-100
-            "
-          >
-            <Hash
-              size={22}
-              className="text-[#0F6E8C]"
-            />
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              IMO Number
-            </p>
-
-            <h3 className="font-semibold">
-              {currentShip.imoNumber}
-            </h3>
-          </div>
-
-        </div>
-
-        {/* Dock */}
-
-        <div className="flex items-start gap-4">
-
-          <div
-            className="
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-2xl
-              bg-cyan-100
-            "
-          >
-            <Anchor
-              size={22}
-              className="text-[#0F6E8C]"
-            />
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              Dock Number
-            </p>
-
-            <h3 className="font-semibold">
-              {currentShip.dockNumber}
-            </h3>
-          </div>
-
-        </div>
-
-        {/* Port */}
-
-        <div className="flex items-start gap-4">
-
-          <div
-            className="
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-2xl
-              bg-cyan-100
-            "
-          >
-            <MapPin
-              size={22}
-              className="text-[#0F6E8C]"
-            />
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              Port
-            </p>
-
-            <h3 className="font-semibold">
-              {currentShip.portName}
-            </h3>
-          </div>
-
+          <p className="mt-0.5 text-xs text-slate-400">
+            Delivery destination linked to your vessel.
+          </p>
         </div>
 
       </div>
+
+      <div className="
+        mt-6
+        grid
+        grid-cols-2
+        gap-5
+        sm:grid-cols-4
+      ">
+
+        {details.map((detail) => {
+          const Icon = detail.icon;
+
+          return (
+            <div
+              key={detail.label}
+              className="min-w-0"
+            >
+
+              <div className="
+                mb-2
+                flex
+                items-center
+                gap-1.5
+              ">
+                <Icon
+                  size={13}
+                  className="text-[#087E8B]"
+                />
+
+                <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                  {detail.label}
+                </p>
+              </div>
+
+              <p className="
+                truncate
+                text-sm
+                font-semibold
+                text-[#102A43]
+              ">
+                {detail.value}
+              </p>
+
+            </div>
+          );
+        })}
+
+      </div>
+
+      <div className="
+        mt-5
+        inline-flex
+        items-center
+        gap-1.5
+        rounded-full
+        bg-emerald-50
+        px-2.5
+        py-1
+        text-[10px]
+        font-medium
+        text-emerald-600
+      ">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        Linked to your profile
+      </div>
+
     </section>
   );
 }

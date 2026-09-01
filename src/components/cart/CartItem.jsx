@@ -1,7 +1,7 @@
 import { Trash2 } from "lucide-react";
 
-import { formatPrice } from "../../utils/formatPrice";
 import QuantitySelector from "../product/QuantitySelector";
+import { formatPrice } from "../../utils/formatPrice";
 
 function CartItem({
   item,
@@ -9,74 +9,230 @@ function CartItem({
   onDecrease,
   onRemove,
 }) {
+  const currency = item.currency || "USD";
+
+  const price = Number(item.price || 0);
+
+  const totalPrice =
+    price * item.quantity;
+
+  const hasDiscount =
+    item.originalPrice &&
+    Number(item.originalPrice) > price;
+
   return (
-    <div
+    <article
       className="
-        rounded-3xl
-        bg-white
-        p-4
-        shadow-md
+        group
+        grid
+        grid-cols-[64px_minmax(0,1fr)_auto]
+        gap-3
+        border-b
+        border-slate-100
+        py-4
+        last:border-b-0
+        sm:grid-cols-[76px_minmax(0,1fr)_auto]
+        sm:gap-4
       "
     >
-      <div className="flex gap-4">
+      {/* Image */}
 
-        <img
-          src={item.image}
-          alt={item.name}
-          className="
-            h-24
-            w-24
-            rounded-2xl
-            object-cover
-            bg-slate-50
-          "
-        />
+      <div
+        className="
+          flex
+          h-16
+          w-16
+          items-center
+          justify-center
+          overflow-hidden
+          rounded-lg
+          bg-[#F4F7FA]
+          sm:h-[76px]
+          sm:w-[76px]
+        "
+      >
+        {item.image ? (
+          <img
+            src={item.image}
+            alt={item.name}
+            className="
+              h-full
+              w-full
+              object-contain
+              p-2
+            "
+          />
+        ) : (
+          <span className="text-[10px] text-slate-400">
+            No image
+          </span>
+        )}
+      </div>
 
-        <div className="flex-1">
+      {/* Product information */}
 
-          <h3 className="font-bold">
-            {item.name}
-          </h3>
+      <div className="min-w-0">
 
-          <p className="mt-1 text-sm text-slate-500">
-            {item.unit}
+        {item.brand && (
+          <p
+            className="
+              mb-0.5
+              text-[10px]
+              font-semibold
+              uppercase
+              tracking-[0.08em]
+              text-slate-400
+            "
+          >
+            {item.brand}
           </p>
+        )}
 
-          <p className="mt-3 text-lg font-bold text-[#0A2342]">
+        <h3
+          className="
+            line-clamp-2
+            text-sm
+            font-semibold
+            leading-5
+            text-[#102A43]
+          "
+        >
+          {item.name}
+        </h3>
+
+        <div
+          className="
+            mt-1
+            flex
+            flex-wrap
+            items-center
+            gap-1.5
+            text-[11px]
+          "
+        >
+          {item.unit && (
+            <span className="text-slate-500">
+              {item.unit}
+            </span>
+          )}
+
+          {item.stock !== undefined && (
+            <>
+              <span className="text-slate-300">
+                •
+              </span>
+
+              <span
+                className={
+                  item.stock > 0
+                    ? "font-medium text-emerald-600"
+                    : "font-medium text-red-500"
+                }
+              >
+                {item.stock > 0
+                  ? "In stock"
+                  : "Out of stock"}
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Mobile quantity */}
+
+        <div className="mt-3 sm:hidden">
+          <QuantitySelector
+            quantity={item.quantity}
+            onIncrease={onIncrease}
+            onDecrease={onDecrease}
+          />
+        </div>
+      </div>
+
+      {/* Price / actions */}
+
+      <div
+        className="
+          flex
+          min-w-[72px]
+          flex-col
+          items-end
+          justify-between
+          gap-3
+        "
+      >
+        <div className="text-right">
+
+          <p
+            className="
+              text-sm
+              font-bold
+              text-[#0A2342]
+            "
+          >
             {formatPrice(
-              item.price,
-              item.currency
+              totalPrice,
+              currency
             )}
           </p>
 
+          {hasDiscount && (
+            <p
+              className="
+                text-[10px]
+                text-slate-400
+                line-through
+              "
+            >
+              {formatPrice(
+                Number(item.originalPrice) *
+                  item.quantity,
+                currency
+              )}
+            </p>
+          )}
+        </div>
+
+        <div className="hidden sm:block">
+          <QuantitySelector
+            quantity={item.quantity}
+            onIncrease={onIncrease}
+            onDecrease={onDecrease}
+          />
         </div>
 
         <button
+          type="button"
           onClick={onRemove}
+          aria-label={`Remove ${item.name}`}
           className="
-            self-start
-            rounded-xl
-            p-2
-            text-red-500
-            hover:bg-red-50
+            absolute
+            hidden
           "
         >
-          <Trash2 size={20} />
+          <Trash2 />
         </button>
 
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${item.name}`}
+          className="
+            flex
+            h-7
+            w-7
+            items-center
+            justify-center
+            rounded-md
+            text-slate-300
+            transition
+            hover:bg-red-50
+            hover:text-red-500
+          "
+        >
+          <Trash2 size={14} />
+        </button>
       </div>
-
-      <div className="mt-5">
-
-        <QuantitySelector
-          quantity={item.quantity}
-          onIncrease={onIncrease}
-          onDecrease={onDecrease}
-        />
-
-      </div>
-
-    </div>
+    </article>
   );
 }
 

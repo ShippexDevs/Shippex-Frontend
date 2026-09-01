@@ -1,3 +1,5 @@
+import { Minus, Plus } from "lucide-react";
+
 function QuantitySelector({
   quantity,
   onIncrease,
@@ -6,53 +8,78 @@ function QuantitySelector({
   return (
     <div
       className="
-        flex
+        inline-flex
+        h-8
         items-center
-        justify-between
-        rounded-2xl
+        rounded-lg
+        border
+        border-slate-200
         bg-white
-        shadow-sm
-        p-2
-        w-40
       "
     >
       <button
+        type="button"
         onClick={(event) => {
           event.stopPropagation();
           onDecrease();
         }}
+        disabled={quantity <= 1}
         className="
-          h-10
-          w-10
-          rounded-xl
-          bg-slate-100
-          text-xl
-          active:scale-95
+          flex
+          h-8
+          w-8
+          items-center
+          justify-center
+          rounded-l-lg
+          text-slate-500
+          transition
+          hover:bg-slate-50
+          hover:text-slate-900
+          disabled:cursor-not-allowed
+          disabled:opacity-30
         "
       >
-        -
+        <Minus size={13} />
       </button>
 
-      <span className="font-semibold text-lg">
+      <span
+        className="
+          flex
+          h-8
+          min-w-8
+          items-center
+          justify-center
+          border-x
+          border-slate-200
+          px-1
+          text-xs
+          font-semibold
+          text-slate-800
+        "
+      >
         {quantity}
       </span>
 
       <button
+        type="button"
         onClick={(event) => {
           event.stopPropagation();
           onIncrease();
         }}
         className="
-          h-10
-          w-10
-          rounded-xl
-          bg-[#0A2342]
-          text-white
-          text-xl
-          active:scale-95
+          flex
+          h-8
+          w-8
+          items-center
+          justify-center
+          rounded-r-lg
+          text-slate-500
+          transition
+          hover:bg-slate-50
+          hover:text-slate-900
         "
       >
-        +
+        <Plus size={13} />
       </button>
     </div>
   );
