@@ -5,141 +5,161 @@ import {
   Hash,
 } from "lucide-react";
 
-import { currentShip } from "../../data/currentShip";
-
-function ShipDetailsCard() {
-  const details = [
-    {
-      label: "Ship Name",
-      value: currentShip.shipName,
-      icon: Ship,
-    },
-    {
-      label: "IMO Number",
-      value: currentShip.imoNumber,
-      icon: Hash,
-    },
-    {
-      label: "Dock",
-      value: currentShip.dockNumber,
-      icon: Anchor,
-    },
-    {
-      label: "Port",
-      value: currentShip.portName,
-      icon: MapPin,
-    },
-  ];
+function ShipDetailsCard({
+  deliveryDestination,
+  onChange,
+}) {
+  const handleChange = (field, value) => {
+    onChange(field, value);
+  };
 
   return (
-    <section className="
-      rounded-2xl
-      border
-      border-slate-200
-      bg-white
-      p-5
-      sm:p-6
-    ">
+    <section
+      className="
+        rounded-2xl
+        border
+        border-slate-200
+        bg-white
+        p-5
+        shadow-sm
+        sm:p-6
+      "
+    >
+      <div className="mb-6">
 
-      <div className="flex items-start gap-3">
+        <h2 className="text-lg font-bold text-[#102A43]">
+          Delivery Destination
+        </h2>
 
-        <div className="
-          flex
-          h-10
-          w-10
-          shrink-0
-          items-center
-          justify-center
-          rounded-xl
-          bg-[#EAF7F8]
-        ">
-          <Ship
-            size={19}
-            className="text-[#087E8B]"
+        <p className="mt-1 text-sm text-slate-500">
+          Confirm where your supply request should be delivered.
+        </p>
+
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+
+        {/* Ship Name */}
+        <div>
+          <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+            <Ship size={16} />
+            Ship Name
+          </label>
+
+          <input
+            type="text"
+            value={deliveryDestination.shipName}
+            onChange={(e) =>
+              handleChange("shipName", e.target.value)
+            }
+            className="
+              w-full
+              rounded-xl
+              border
+              border-slate-300
+              px-4
+              py-3
+              text-sm
+              outline-none
+              transition
+              focus:border-[#087E8B]
+              focus:ring-2
+              focus:ring-[#087E8B]/10
+            "
           />
         </div>
 
+        {/* IMO */}
         <div>
-          <h2 className="
-            text-base
-            font-bold
-            text-[#102A43]
-          ">
-            Vessel Details
-          </h2>
+          <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+            <Hash size={16} />
+            IMO Number
+          </label>
 
-          <p className="mt-0.5 text-xs text-slate-400">
-            Delivery destination linked to your vessel.
-          </p>
+          <input
+            type="text"
+            value={deliveryDestination.imoNumber}
+            onChange={(e) =>
+              handleChange("imoNumber", e.target.value)
+            }
+            className="
+              w-full
+              rounded-xl
+              border
+              border-slate-300
+              px-4
+              py-3
+              text-sm
+              outline-none
+              transition
+              focus:border-[#087E8B]
+              focus:ring-2
+              focus:ring-[#087E8B]/10
+            "
+          />
+        </div>
+
+        {/* Berth */}
+        <div>
+          <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+            <Anchor size={16} />
+            Berth Number
+          </label>
+
+          <input
+            type="text"
+            value={deliveryDestination.berthNumber}
+            onChange={(e) =>
+              handleChange("berthNumber", e.target.value)
+            }
+            className="
+              w-full
+              rounded-xl
+              border
+              border-slate-300
+              px-4
+              py-3
+              text-sm
+              outline-none
+              transition
+              focus:border-[#087E8B]
+              focus:ring-2
+              focus:ring-[#087E8B]/10
+            "
+          />
+        </div>
+
+        {/* Port */}
+        <div>
+          <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+            <MapPin size={16} />
+            Port Name
+          </label>
+
+          <input
+            type="text"
+            value={deliveryDestination.portName}
+            onChange={(e) =>
+              handleChange("portName", e.target.value)
+            }
+            className="
+              w-full
+              rounded-xl
+              border
+              border-slate-300
+              px-4
+              py-3
+              text-sm
+              outline-none
+              transition
+              focus:border-[#087E8B]
+              focus:ring-2
+              focus:ring-[#087E8B]/10
+            "
+          />
         </div>
 
       </div>
-
-      <div className="
-        mt-6
-        grid
-        grid-cols-2
-        gap-5
-        sm:grid-cols-4
-      ">
-
-        {details.map((detail) => {
-          const Icon = detail.icon;
-
-          return (
-            <div
-              key={detail.label}
-              className="min-w-0"
-            >
-
-              <div className="
-                mb-2
-                flex
-                items-center
-                gap-1.5
-              ">
-                <Icon
-                  size={13}
-                  className="text-[#087E8B]"
-                />
-
-                <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
-                  {detail.label}
-                </p>
-              </div>
-
-              <p className="
-                truncate
-                text-sm
-                font-semibold
-                text-[#102A43]
-              ">
-                {detail.value}
-              </p>
-
-            </div>
-          );
-        })}
-
-      </div>
-
-      <div className="
-        mt-5
-        inline-flex
-        items-center
-        gap-1.5
-        rounded-full
-        bg-emerald-50
-        px-2.5
-        py-1
-        text-[10px]
-        font-medium
-        text-emerald-600
-      ">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        Linked to your profile
-      </div>
-
     </section>
   );
 }

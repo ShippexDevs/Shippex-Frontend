@@ -1,28 +1,75 @@
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, X } from "lucide-react";
 
-function SearchBar() {
+function SearchBar({ value = "", onChange }) {
   return (
-    <div className="flex items-center rounded-2xl bg-white shadow-md px-4 py-4">
+    <div className="relative mt-6">
 
       <Search
-        size={20}
-        className="text-gray-400"
+        size={19}
+        className="
+          absolute
+          left-4
+          top-1/2
+          -translate-y-1/2
+          text-slate-400
+        "
       />
 
       <input
         type="text"
+        value={value}
+        onChange={(event) =>
+          onChange?.(event.target.value)
+        }
         placeholder="Search products..."
-        className="ml-3 flex-1 outline-none"
+        className="
+          w-full
+          rounded-2xl
+          border
+          border-slate-200
+          bg-white
+          py-3.5
+          pl-11
+          pr-11
+          text-sm
+          text-slate-800
+          shadow-sm
+          outline-none
+          transition
+
+          placeholder:text-slate-400
+
+          focus:border-[#0F6E8C]
+          focus:ring-2
+          focus:ring-[#0F6E8C]/10
+        "
       />
 
-      <button>
-
-        <SlidersHorizontal
-          size={20}
-          className="text-[#0A2342]"
-        />
-
-      </button>
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange?.("")}
+          aria-label="Clear search"
+          className="
+            absolute
+            right-3
+            top-1/2
+            flex
+            h-8
+            w-8
+            -translate-y-1/2
+            items-center
+            justify-center
+            rounded-lg
+            text-slate-400
+            transition
+            hover:bg-slate-100
+            hover:text-slate-700
+          "
+        >
+          <X size={17} />
+        </button>
+      )}
 
     </div>
   );

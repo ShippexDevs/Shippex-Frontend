@@ -1,45 +1,77 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const CartContext = createContext(null);
 
+const CART_STORAGE_KEY = "shippex_cart";
+
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
 
-function addToCart(product, quantity) {
-  
+      if (!savedCart) {
+        return [];
+      }
 
-  if (quantity == null || quantity <= 0) {
-    throw new Error("addToCart requires a valid quantity.");
-  }
+      const parsedCart = JSON.parse(savedCart);
 
-  setCartItems((currentItems) => {
-    const existingItem = currentItems.find(
-      (item) => item.id === product.id
-    );
-
-    if (existingItem) {
-      return currentItems.map((item) =>
-        item.id === product.id
-          ? {
-              ...item,
-              quantity: item.quantity + quantity,
-            }
-          : item
-      );
+      return Array.isArray(parsedCart) ? parsedCart : [];
+    } catch (error) {
+      console.error("Failed to restore cart:", error);
+      return [];
     }
-    return [
-      ...currentItems,
-      {
-        ...product,
-        quantity,
-      },
-    ];
   });
-}
+
+  /*
+   * Persist cart whenever it changes.
+   */
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        CART_STORAGE_KEY,
+        JSON.stringify(cartItems)
+      );
+    } catch (error) {
+      console.error("Failed to persist cart:", error);
+    }
+  }, [cartItems]);
+
+  function addToCart(product, quantity) {
+    if (quantity == null || quantity <= 0) {
+      throw new Error("addToCart requires a valid quantity.");
+    }
+
+    setCartItems((currentItems) => {
+      const existingItem = currentItems.find(
+        (item) => item.id === product.id
+      );
+
+      if (existingItem) {
+        return currentItems.map((item) =>
+          item.id === product.id
+            ? {
+                ...item,
+                quantity: item.quantity + quantity,
+              }
+            : item
+        );
+      }
+
+      return [
+        ...currentItems,
+        {
+          ...product,
+          quantity,
+        },
+      ];
+    });
+  }
 
   function removeFromCart(productId) {
     setCartItems((currentItems) =>
-      currentItems.filter((item) => item.id !== productId)
+      currentItems.filter(
+        (item) => item.id !== productId
+      )
     );
   }
 
@@ -64,11 +96,12 @@ function addToCart(product, quantity) {
   function clearCart() {
     setCartItems([]);
   }
+
   function isProductInCart(productId) {
-  return cartItems.some(
-    (item) => item.id === productId
-  );
-}
+    return cartItems.some(
+      (item) => item.id === productId
+    );
+  }
 
   const totalItems = useMemo(() => {
     return cartItems.reduce(
@@ -79,7 +112,8 @@ function addToCart(product, quantity) {
 
   const subtotal = useMemo(() => {
     return cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
+      (total, item) =>
+        total + Number(item.price) * item.quantity,
       0
     );
   }, [cartItems]);
