@@ -24,16 +24,19 @@ export async function createOrder(orderData) {
 
     try {
       const errorBody = await response.json();
+
       errorMessage =
         errorBody.message ||
         errorBody.error ||
         errorMessage;
     } catch {
-      // Response was not JSON
+      // Backend did not return JSON.
     }
 
     throw new Error(errorMessage);
   }
 
-  return response.json();
+  const responseBody = await response.json();
+
+  return responseBody;
 }

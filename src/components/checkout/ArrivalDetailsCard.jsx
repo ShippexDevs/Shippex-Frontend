@@ -1,13 +1,24 @@
-import { CalendarClock } from "lucide-react";
+import { CalendarDays, Clock3 } from "lucide-react";
 
 function ArrivalDetailsCard({
-  deliveryDetails,
+  deliveryDetails = {
+    estimatedDeliveryDate: "",
+    estimatedDeliveryTime: "",
+  },
   onChange,
+  errors = {},
 }) {
+  const handleChange = (field, value) => {
+    onChange?.({
+      ...deliveryDetails,
+      [field]: value,
+    });
+  };
+
   return (
     <section
       className="
-        rounded-2xl
+        rounded-3xl
         border
         border-slate-200
         bg-white
@@ -16,98 +27,156 @@ function ArrivalDetailsCard({
         sm:p-6
       "
     >
-      <div className="flex items-start gap-3">
+      {/* Header */}
 
+      <div className="flex items-start gap-3">
         <div
           className="
             flex
-            h-10
-            w-10
+            h-11
+            w-11
             shrink-0
             items-center
             justify-center
-            rounded-xl
+            rounded-2xl
             bg-[#EAF7F8]
             text-[#087E8B]
           "
         >
-          <CalendarClock size={19} />
+          <Clock3 size={20} />
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-[#102A43]">
+          <h2 className="text-xl font-bold text-[#102A43]">
             Expected Delivery
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            When should the supplies arrive?
+            Let us know when your supply should be delivered.
           </p>
         </div>
-
       </div>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-2">
+      {/* Date */}
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">
-            Required Delivery Date
-          </label>
+      <div className="mt-6">
+        <label
+          htmlFor="estimatedDeliveryDate"
+          className="mb-2 block text-sm font-medium text-slate-700"
+        >
+          Required Delivery Date
+        </label>
+
+        <div className="relative">
+          <CalendarDays
+            size={18}
+            className="
+              pointer-events-none
+              absolute
+              left-4
+              top-1/2
+              -translate-y-1/2
+              text-slate-400
+            "
+          />
 
           <input
+            id="estimatedDeliveryDate"
             type="date"
-            value={deliveryDetails.estimatedDeliveryDate}
-            onChange={(e) =>
-              onChange(
+            value={deliveryDetails.estimatedDeliveryDate || ""}
+            onChange={(event) =>
+              handleChange(
                 "estimatedDeliveryDate",
-                e.target.value
+                event.target.value
               )
             }
-            className="
+            className={`
               w-full
-              rounded-xl
+              rounded-2xl
               border
-              border-slate-300
-              px-4
-              py-3
+              bg-white
+              py-3.5
+              pl-11
+              pr-4
               text-sm
+              text-slate-900
               outline-none
-              focus:border-[#087E8B]
-              focus:ring-2
-              focus:ring-[#087E8B]/10
-            "
+              transition
+              ${
+                errors.estimatedDeliveryDate
+                  ? "border-red-400 focus:border-red-500"
+                  : "border-slate-200 focus:border-[#087E8B]"
+              }
+            `}
           />
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">
-            Required Delivery Time
-          </label>
+        {errors.estimatedDeliveryDate && (
+          <p className="mt-1.5 text-xs text-red-500">
+            {errors.estimatedDeliveryDate}
+          </p>
+        )}
+      </div>
+
+      {/* Time */}
+
+      <div className="mt-5">
+        <label
+          htmlFor="estimatedDeliveryTime"
+          className="mb-2 block text-sm font-medium text-slate-700"
+        >
+          Required Delivery Time
+        </label>
+
+        <div className="relative">
+          <Clock3
+            size={18}
+            className="
+              pointer-events-none
+              absolute
+              left-4
+              top-1/2
+              -translate-y-1/2
+              text-slate-400
+            "
+          />
 
           <input
+            id="estimatedDeliveryTime"
             type="time"
-            value={deliveryDetails.estimatedDeliveryTime}
-            onChange={(e) =>
-              onChange(
+            value={deliveryDetails.estimatedDeliveryTime || ""}
+            onChange={(event) =>
+              handleChange(
                 "estimatedDeliveryTime",
-                e.target.value
+                event.target.value
               )
             }
-            className="
+            className={`
               w-full
-              rounded-xl
+              rounded-2xl
               border
-              border-slate-300
-              px-4
-              py-3
+              bg-white
+              py-3.5
+              pl-11
+              pr-4
               text-sm
+              text-slate-900
               outline-none
-              focus:border-[#087E8B]
-              focus:ring-2
-              focus:ring-[#087E8B]/10
-            "
+              transition
+              ${
+                errors.estimatedDeliveryTime
+                  ? "border-red-400 focus:border-red-500"
+                  : "border-slate-200 focus:border-[#087E8B]"
+              }
+            `}
           />
         </div>
 
+        {errors.estimatedDeliveryTime && (
+          <p className="mt-1.5 text-xs text-red-500">
+            {errors.estimatedDeliveryTime}
+          </p>
+        )}
       </div>
     </section>
   );
