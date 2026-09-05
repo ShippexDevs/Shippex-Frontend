@@ -1,12 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  Check,
-  ChevronDown,
-  ArrowDownAZ,
-  ArrowDownUp,
-  CircleDollarSign,
-} from "lucide-react";
 
 import { categories } from "../data/categories";
 import { getProductsByCategorySlug } from "../services/productApi";
@@ -14,33 +7,6 @@ import { getProductsByCategorySlug } from "../services/productApi";
 import PageHeader from "../components/common/PageHeader";
 import SearchBar from "../components/common/Searchbar";
 import ProductSection from "../components/product/ProductSection";
-
-const SORT_OPTIONS = [
-  {
-    value: "recommended",
-    label: "Recommended",
-    description: "Best match for you",
-    icon: ArrowDownUp,
-  },
-  {
-    value: "price-low",
-    label: "Price: Low to High",
-    description: "Lowest price first",
-    icon: CircleDollarSign,
-  },
-  {
-    value: "price-high",
-    label: "Price: High to Low",
-    description: "Highest price first",
-    icon: CircleDollarSign,
-  },
-  {
-    value: "name",
-    label: "Name: A to Z",
-    description: "Alphabetical order",
-    icon: ArrowDownAZ,
-  },
-];
 
 function CategoryProductsPage() {
   const { slug } = useParams();
@@ -50,13 +16,11 @@ function CategoryProductsPage() {
   );
 
   const [products, setProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("default");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [sortBy, setSortBy] = useState("recommended");
-  const [sortOpen, setSortOpen] = useState(false);
-
-  const sortRef = useRef(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -64,8 +28,7 @@ function CategoryProductsPage() {
         setLoading(true);
         setError(null);
 
-        const data =
-          await getProductsByCategorySlug(slug);
+        const data = await getProductsByCategorySlug(slug);
 
         setProducts(data);
       } catch (error) {
@@ -86,38 +49,76 @@ function CategoryProductsPage() {
   }, [slug]);
 
   /*
-   * Close sort menu when clicking outside.
+   * Search + Sort
+   *
+   * We don't modify the original products array.
+   * Instead, create a filtered/sorted copy.
    */
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        sortRef.current &&
-        !sortRef.current.contains(event.target)
-      ) {
-        setSortOpen(false);
-      }
-    };
+  const displayedProducts = useMemo(() => {
+    let result = [...products];
 
-    document.addEventListener(
-      "mousedown",
-      handleClickOutside
-    );
+    const query = searchQuery.trim().toLowerCase();
 
-    return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
-    };
-  }, []);
+    // Search
+    if (query) {
+      result = result.filter((product) => {
+        const name = product.name?.toLowerCase() || "";
+        const brand = product.brand?.toLowerCase() || "";
+        const description =
+          product.description?.toLowerCase() || "";
+        const tags = Array.isArray(product.tags)
+          ? product.tags.join(" ").toLowerCase()
+          : "";
 
-  /*
-   * Reset sorting when changing category.
-   */
-  useEffect(() => {
-    setSortBy("recommended");
-    setSortOpen(false);
-  }, [slug]);
+        return (
+          name.includes(query) ||
+          brand.includes(query) ||
+          description.includes(query) ||
+          tags.includes(query)
+        );
+      });
+    }
+
+    // Sort
+    switch (sortOption) {
+      case "price-low":
+        result.sort(
+          (a, b) =>
+            Number(a.price || 0) -
+            Number(b.price || 0)
+        );
+        break;
+
+      case "price-high":
+        result.sort(
+          (a, b) =>
+            Number(b.price || 0) -
+            Number(a.price || 0)
+        );
+        break;
+
+      case "name-az":
+        result.sort((a, b) =>
+          (a.name || "").localeCompare(
+            b.name || ""
+          )
+        );
+        break;
+
+      case "name-za":
+        result.sort((a, b) =>
+          (b.name || "").localeCompare(
+            a.name || ""
+          )
+        );
+        break;
+
+      default:
+        break;
+    }
+
+    return result;
+  }, [products, searchQuery, sortOption]);
 
   if (!category) {
     return (
@@ -129,39 +130,6 @@ function CategoryProductsPage() {
     );
   }
 
-  /*
-   * Sort products without modifying the original API state.
-   */
-  const sortedProducts = [...products].sort(
-    (a, b) => {
-      switch (sortBy) {
-        case "price-low":
-          return Number(a.price) - Number(b.price);
-
-        case "price-high":
-          return Number(b.price) - Number(a.price);
-
-        case "name":
-          return a.name.localeCompare(
-            b.name,
-            undefined,
-            {
-              sensitivity: "base",
-            }
-          );
-
-        case "recommended":
-        default:
-          return 0;
-      }
-    }
-  );
-
-  const selectedSort =
-    SORT_OPTIONS.find(
-      (option) => option.value === sortBy
-    ) || SORT_OPTIONS[0];
-
   return (
     <div className="min-h-screen bg-[#F5F8FA]">
       <div className="mx-auto max-w-7xl px-5 py-6">
@@ -171,190 +139,102 @@ function CategoryProductsPage() {
           subtitle={category.description}
         />
 
-        <SearchBar />
+        {/* Search */}
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
 
+        {/* Product controls */}
         <div className="mt-5 mb-8 flex items-center justify-between gap-4">
 
-          {/* Product count */}
           <p className="text-sm text-slate-500">
             {loading
               ? "Loading products..."
-              : `${products.length} ${
-                  products.length === 1
-                    ? "Product"
-                    : "Products"
-                }`}
+              : searchQuery
+                ? `${displayedProducts.length} ${
+                    displayedProducts.length === 1
+                      ? "product"
+                      : "products"
+                  } found`
+                : `${products.length} Products`}
           </p>
 
-          {/* Custom Sort */}
-          <div
-            ref={sortRef}
-            className="relative"
-          >
-            <button
-              type="button"
-              onClick={() =>
-                setSortOpen((current) => !current)
+          {/* Sort */}
+          <div className="relative shrink-0">
+            <select
+              value={sortOption}
+              onChange={(event) =>
+                setSortOption(event.target.value)
               }
-              aria-expanded={sortOpen}
               className="
-                group
-                flex
-                items-center
-                gap-2
+                appearance-none
+                cursor-pointer
                 rounded-xl
                 border
                 border-slate-200
                 bg-white
-                px-3.5
-                py-2.5
+                py-2
+                pl-4
+                pr-9
                 text-sm
                 font-medium
                 text-slate-700
                 shadow-sm
-                transition-all
-                duration-200
+                outline-none
+                transition
+
                 hover:border-slate-300
-                hover:shadow-md
-                active:scale-[0.98]
+
+                focus:border-[#0F6E8C]
+                focus:ring-2
+                focus:ring-[#0F6E8C]/10
               "
             >
-              <span className="text-slate-400">
-                Sort:
-              </span>
+              <option value="default">
+                Sort
+              </option>
 
-              <span className="text-[#102A43]">
-                {selectedSort.label}
-              </span>
+              <option value="name-az">
+                Name: A–Z
+              </option>
 
-              <ChevronDown
-                size={16}
-                className={`
-                  text-slate-400
-                  transition-transform
-                  duration-200
-                  ${
-                    sortOpen
-                      ? "rotate-180"
-                      : ""
-                  }
-                `}
+              <option value="name-za">
+                Name: Z–A
+              </option>
+
+              <option value="price-low">
+                Price: Low to High
+              </option>
+
+              <option value="price-high">
+                Price: High to Low
+              </option>
+            </select>
+
+            {/* Dropdown arrow */}
+            <svg
+              className="
+                pointer-events-none
+                absolute
+                right-3
+                top-1/2
+                h-4
+                w-4
+                -translate-y-1/2
+                text-slate-400
+              "
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
+              <path
+                d="m6 8 4 4 4-4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-            </button>
-
-            {sortOpen && (
-              <div
-                className="
-                  absolute
-                  right-0
-                  top-full
-                  z-50
-                  mt-2
-                  w-64
-                  overflow-hidden
-                  rounded-2xl
-                  border
-                  border-slate-200
-                  bg-white
-                  p-1.5
-                  shadow-[0_16px_40px_rgba(15,23,42,0.12)]
-                "
-              >
-                <div className="px-3 pb-2 pt-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-                    Sort products
-                  </p>
-                </div>
-
-                <div className="space-y-0.5">
-                  {SORT_OPTIONS.map(
-                    (option) => {
-                      const Icon = option.icon;
-                      const isSelected =
-                        sortBy === option.value;
-
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => {
-                            setSortBy(
-                              option.value
-                            );
-                            setSortOpen(false);
-                          }}
-                          className={`
-                            flex
-                            w-full
-                            items-center
-                            gap-3
-                            rounded-xl
-                            px-3
-                            py-2.5
-                            text-left
-                            transition
-                            ${
-                              isSelected
-                                ? "bg-[#F0F8F9]"
-                                : "hover:bg-slate-50"
-                            }
-                          `}
-                        >
-                          {/* Icon */}
-                          <div
-                            className={`
-                              flex
-                              h-8
-                              w-8
-                              shrink-0
-                              items-center
-                              justify-center
-                              rounded-lg
-                              ${
-                                isSelected
-                                  ? "bg-[#087E8B] text-white"
-                                  : "bg-slate-100 text-slate-500"
-                              }
-                            `}
-                          >
-                            <Icon size={15} />
-                          </div>
-
-                          {/* Text */}
-                          <div className="min-w-0 flex-1">
-                            <p
-                              className={`
-                                text-sm
-                                font-medium
-                                ${
-                                  isSelected
-                                    ? "text-[#087E8B]"
-                                    : "text-slate-700"
-                                }
-                              `}
-                            >
-                              {option.label}
-                            </p>
-
-                            <p className="mt-0.5 text-[11px] text-slate-400">
-                              {option.description}
-                            </p>
-                          </div>
-
-                          {/* Selected */}
-                          {isSelected && (
-                            <Check
-                              size={17}
-                              className="shrink-0 text-[#087E8B]"
-                            />
-                          )}
-                        </button>
-                      );
-                    }
-                  )}
-                </div>
-              </div>
-            )}
+            </svg>
           </div>
         </div>
 
@@ -376,26 +256,52 @@ function CategoryProductsPage() {
           </div>
         )}
 
-        {/* Empty */}
+        {/* No search results */}
         {!loading &&
           !error &&
-          products.length === 0 && (
-            <div className="py-10 text-center">
-              <p className="text-slate-500">
-                No products found in this category.
+          displayedProducts.length === 0 && (
+            <div className="py-16 text-center">
+              <p className="text-lg font-medium text-slate-700">
+                No products found
               </p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Try a different search term.
+              </p>
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="
+                    mt-4
+                    rounded-xl
+                    bg-[#0F6E8C]
+                    px-4
+                    py-2
+                    text-sm
+                    font-medium
+                    text-white
+                    transition
+                    hover:bg-[#0B5D76]
+                  "
+                >
+                  Clear search
+                </button>
+              )}
             </div>
           )}
 
         {/* Products */}
         {!loading &&
           !error &&
-          sortedProducts.length > 0 && (
+          displayedProducts.length > 0 && (
             <ProductSection
-              products={sortedProducts}
+              products={displayedProducts}
               showHeader={false}
             />
           )}
+
       </div>
     </div>
   );
