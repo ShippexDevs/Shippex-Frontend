@@ -1,136 +1,351 @@
 import { useState } from "react";
-import { Bell, LogOut } from "lucide-react";
+import {
+  HelpCircle,
+  Info,
+  KeyRound,
+  LogOut,
+  Menu,
+  UserCircle,
+  X,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 
 import { useAuth } from "../../context/AuthContext";
-import { useCart } from "../../context/CartContext";
-import ConfirmationModal from "../common/ConfirmationModal";
+import LogoutConfirmModal from "../common/LogoutConfirmModal";
 
 function Header() {
-
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const { user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
-  const { clearCart } = useCart();
+  const handleNavigate = (path) => {
+    setMenuOpen(false);
+    navigate(path);
+  };
 
-  const [showLogoutModal, setShowLogoutModal] =
-    useState(false);
+  const handleLogoutClick = () => {
+    setMenuOpen(false);
+    setLogoutModalOpen(true);
+  };
 
-  const firstName =
-    user?.name?.split(" ")[0] ?? "Captain";
-
-  function confirmLogout() {
-
-    clearCart();
-
+  const handleLogoutConfirm = () => {
+    setLogoutModalOpen(false);
     logout();
 
-    toast.success("Logged out successfully.");
-
-    setShowLogoutModal(false);
-
-    navigate("/", {
+    navigate("/login", {
       replace: true,
     });
-
-  }
+  };
 
   return (
     <>
-
       <header
         className="
-          rounded-b-[32px]
-          bg-[#071B35]
-          px-5
-          pb-8
-          pt-12
-          text-white
+          sticky
+          top-0
+          z-40
+          border-b
+          border-slate-200
+          bg-white/95
+          backdrop-blur-md
         "
       >
+        <div
+          className="
+            flex
+            h-[68px]
+            items-center
+            justify-between
+            px-5
+            lg:px-8
+          "
+        >
 
-        <div className="flex items-start justify-between">
+          {/* Hamburger */}
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              text-slate-600
+              transition
+              hover:bg-slate-100
+            "
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+
+          {/* Logo */}
+
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2.5"
+          >
+            <div
+              className="
+                flex
+                h-9
+                w-9
+                items-center
+                justify-center
+                rounded-xl
+                bg-[#087E8B]
+                text-white
+              "
+            >
+              <span className="text-sm font-bold">
+                S
+              </span>
+            </div>
+
+            <div className="text-left">
+
+              <p className="text-base font-bold tracking-tight text-[#102A43]">
+                Shippex
+              </p>
+
+              <p className="hidden text-[9px] font-medium uppercase tracking-[0.16em] text-slate-400 sm:block">
+                Ship Supplies
+              </p>
+
+            </div>
+          </button>
+
+          {/* Profile shortcut */}
+
+          <button
+            type="button"
+            onClick={() => navigate("/profile")}
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              bg-slate-100
+              text-slate-600
+              transition
+              hover:bg-slate-200
+            "
+            aria-label="Profile"
+          >
+            <UserCircle size={21} />
+          </button>
+
+        </div>
+      </header>
+
+      {/* Overlay */}
+
+      {menuOpen && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setMenuOpen(false)}
+          className="
+            fixed
+            inset-0
+            z-50
+            bg-slate-950/40
+            backdrop-blur-[2px]
+          "
+        />
+      )}
+
+      {/* Secondary menu */}
+
+      <aside
+        className={`
+          fixed
+          inset-y-0
+          left-0
+          z-[60]
+          flex
+          w-[285px]
+          flex-col
+          bg-white
+          shadow-2xl
+          transition-transform
+          duration-300
+          ${
+            menuOpen
+              ? "translate-x-0"
+              : "-translate-x-full"
+          }
+        `}
+      >
+
+        {/* Menu header */}
+
+        <div
+          className="
+            flex
+            h-[68px]
+            items-center
+            justify-between
+            border-b
+            border-slate-200
+            px-5
+          "
+        >
 
           <div>
-
-            <p className="text-sm text-cyan-300">
-              Welcome Back
+            <p className="font-bold text-slate-900">
+              Menu
             </p>
 
-            <h1 className="mt-1 text-3xl font-bold">
-              {firstName} 👋
-            </h1>
+            <p className="text-xs text-slate-400">
+              Account & support
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen(false)}
+            className="
+              rounded-xl
+              p-2
+              text-slate-400
+              hover:bg-slate-100
+              hover:text-slate-700
+            "
+          >
+            <X size={20} />
+          </button>
+
+        </div>
+
+        {/* Secondary navigation */}
+
+        <div className="flex-1 px-4 py-5">
+
+          <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            Account
+          </p>
+
+          <div className="space-y-1">
+
+            <MenuItem
+              icon={UserCircle}
+              label="My Profile"
+              onClick={() => handleNavigate("/profile")}
+            />
+
+            <MenuItem
+              icon={KeyRound}
+              label="Change Password"
+              onClick={() =>
+                handleNavigate("/change-password")
+              }
+            />
 
           </div>
 
-          <div className="flex items-center gap-3">
+          <p className="mb-3 mt-8 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            Support
+          </p>
 
-            <button
-              type="button"
-              className="
-                relative
-                rounded-2xl
-                bg-white/10
-                p-3
-              "
-            >
-              <Bell size={22} />
+          <div className="space-y-1">
 
-              <span
-                className="
-                  absolute
-                  right-2
-                  top-2
-                  h-2
-                  w-2
-                  rounded-full
-                  bg-orange-500
-                "
-              />
+            <MenuItem
+              icon={HelpCircle}
+              label="Help & Support"
+              onClick={() => {
+                setMenuOpen(false);
+              }}
+            />
 
-            </button>
-
-            {user && (
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowLogoutModal(true)
-                }
-                className="
-                  rounded-2xl
-                  bg-red-500
-                  p-3
-                  transition
-                  hover:bg-red-600
-                "
-              >
-                <LogOut size={20} />
-              </button>
-
-            )}
+            <MenuItem
+              icon={Info}
+              label="About Shippex"
+              onClick={() => {
+                setMenuOpen(false);
+              }}
+            />
 
           </div>
 
         </div>
 
-      </header>
+        {/* Logout */}
 
-      <ConfirmationModal
-        open={showLogoutModal}
-        title="Logout"
-        message="Are you sure you want to logout from Shippex?"
-        confirmText="Logout"
-        cancelText="Cancel"
-        onConfirm={confirmLogout}
-        onCancel={() =>
-          setShowLogoutModal(false)
-        }
+        <div className="border-t border-slate-200 p-4">
+
+          <button
+            type="button"
+            onClick={handleLogoutClick}
+            className="
+              flex
+              w-full
+              items-center
+              gap-3
+              rounded-xl
+              px-3
+              py-3
+              text-sm
+              font-semibold
+              text-red-600
+              transition
+              hover:bg-red-50
+            "
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
+
+        </div>
+
+      </aside>
+
+      <LogoutConfirmModal
+        open={logoutModalOpen}
+        onCancel={() => setLogoutModalOpen(false)}
+        onConfirm={handleLogoutConfirm}
       />
-
     </>
+  );
+}
+
+function MenuItem({
+  icon: Icon,
+  label,
+  onClick,
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="
+        flex
+        w-full
+        items-center
+        gap-3
+        rounded-xl
+        px-3
+        py-3
+        text-left
+        text-sm
+        font-medium
+        text-slate-600
+        transition
+        hover:bg-slate-100
+        hover:text-slate-900
+      "
+    >
+      <Icon size={18} />
+      <span>{label}</span>
+    </button>
   );
 }
 

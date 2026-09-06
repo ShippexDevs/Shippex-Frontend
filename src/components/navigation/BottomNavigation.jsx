@@ -1,13 +1,52 @@
-import { NavLink } from "react-router-dom";
-import { navigation } from "../../data/navigation";
-import { useCart } from "../../context/CartContext";
-import { useAuth } from "../../context/AuthContext";
+import {
+  Home,
+  Grid2X2,
+  ShoppingCart,
+  ClipboardList,
+  UserCircle,
+} from "lucide-react";
+
+import { useLocation, useNavigate } from "react-router-dom";
+
+const navigation = [
+  {
+    label: "Home",
+    icon: Home,
+    path: "/",
+  },
+  {
+    label: "Categories",
+    icon: Grid2X2,
+    path: "/categories",
+  },
+  {
+    label: "Cart",
+    icon: ShoppingCart,
+    path: "/cart",
+  },
+  {
+    label: "Orders",
+    icon: ClipboardList,
+    path: "/orders",
+  },
+  {
+    label: "Profile",
+    icon: UserCircle,
+    path: "/profile",
+  },
+];
 
 function BottomNavigation() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const { totalItems } = useCart();
+  const isActive = (path) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
 
-  const { token } = useAuth();
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <nav
@@ -16,108 +55,73 @@ function BottomNavigation() {
         bottom-0
         left-0
         right-0
-        z-50
-        bg-white/95
-        backdrop-blur-xl
+        z-40
         border-t
         border-slate-200
-        shadow-[0_-8px_25px_rgba(0,0,0,0.08)]
-        rounded-t-3xl
+        bg-white/95
+        px-2
+        pb-[env(safe-area-inset-bottom)]
+        shadow-[0_-4px_20px_rgba(15,23,42,0.06)]
+        backdrop-blur-md
+        lg:hidden
       "
     >
-      <div className="mx-auto max-w-7xl">
-        <div className="flex items-center justify-around h-20">
+      <div className="mx-auto flex max-w-xl items-center justify-around">
 
-          {navigation.map((item) => {
+        {navigation.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
 
-            const Icon = item.icon;
-
-            const isCart = item.path === "/cart";
-
-            const requiresAuthentication =
-              item.path === "/cart" ||
-              item.path === "/orders" ||
-              item.path === "/profile" ||
-              item.path === "/checkout";
-
-            const destinationPath =
-              !token && requiresAuthentication
-                ? "/login"
-                : item.path;
-
-            return (
-
-              <NavLink
-                key={item.path}
-                to={destinationPath}
-                className={({ isActive }) =>
-                  `flex flex-col items-center transition-all duration-200 ${
-                    isActive
-                      ? "text-[#0F6E8C]"
-                      : "text-slate-500"
-                  }`
+          return (
+            <button
+              key={item.path}
+              type="button"
+              onClick={() => navigate(item.path)}
+              className={`
+                flex
+                min-w-[62px]
+                flex-col
+                items-center
+                gap-1
+                px-2
+                py-2.5
+                text-[10px]
+                font-semibold
+                transition
+                ${
+                  active
+                    ? "text-[#087E8B]"
+                    : "text-slate-400 hover:text-slate-600"
                 }
+              `}
+            >
+              <div
+                className={`
+                  flex
+                  h-8
+                  w-10
+                  items-center
+                  justify-center
+                  rounded-xl
+                  transition
+                  ${
+                    active
+                      ? "bg-[#E7F6F7]"
+                      : "bg-transparent"
+                  }
+                `}
               >
-                {({ isActive }) => (
-                  <>
+                <Icon size={19} />
+              </div>
 
-                    <div
-                      className={`
-                        relative
-                        transition-all
-                        duration-200
-                        p-2
-                        rounded-xl
-                        ${
-                          isActive
-                            ? "bg-cyan-100 scale-110"
-                            : ""
-                        }
-                      `}
-                    >
+              <span>
+                {item.label}
+              </span>
 
-                      <Icon size={22} />
+            </button>
+          );
+        })}
 
-                      {isCart && totalItems > 0 && (
-
-                        <span
-                          className="
-                            absolute
-                            -top-1
-                            -right-1
-                            flex
-                            h-5
-                            w-5
-                            items-center
-                            justify-center
-                            rounded-full
-                            bg-[#FF6B35]
-                            text-[10px]
-                            font-bold
-                            text-white
-                          "
-                        >
-                          {totalItems}
-                        </span>
-
-                      )}
-
-                    </div>
-
-                    <span className="mt-1 text-[11px] font-medium">
-                      {item.title}
-                    </span>
-
-                  </>
-                )}
-
-              </NavLink>
-
-            );
-
-          })}
-
-        </div>
       </div>
     </nav>
   );

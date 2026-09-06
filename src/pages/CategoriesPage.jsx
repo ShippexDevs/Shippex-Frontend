@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
+import MobileLayout from "../layouts/MobileLayout";
 import { categories } from "../data/categories";
 
 import CategoryCard from "../components/home/CategoryCard";
@@ -9,9 +10,9 @@ function CategoriesPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#F5F8FA]">
+    <MobileLayout>
 
-      <div className="mx-auto max-w-7xl px-5 py-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 
         <PageHeader
           title="Categories"
@@ -19,7 +20,18 @@ function CategoriesPage() {
           showBack
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-8">
+        <div
+          className="
+            mt-8
+            grid
+            grid-cols-2
+            gap-4
+            sm:grid-cols-3
+            md:grid-cols-4
+            lg:grid-cols-5
+            xl:grid-cols-6
+          "
+        >
 
           {categories.map((category) => (
             <CategoryCard
@@ -27,7 +39,9 @@ function CategoriesPage() {
               icon={category.icon}
               name={category.name}
               onClick={() =>
-                navigate(`/categories/${category.slug}`)
+                navigate(
+                  `/categories/${category.slug}`
+                )
               }
             />
           ))}
@@ -36,7 +50,7 @@ function CategoriesPage() {
 
       </div>
 
-    </div>
+    </MobileLayout>
   );
 }
 
