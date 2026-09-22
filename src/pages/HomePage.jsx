@@ -59,7 +59,7 @@ function HomePage() {
             If it is another navigation/header,
             remove it. */}
 
-        <Header />
+        
 
         <main className="mx-auto max-w-7xl space-y-8 px-4 pt-6 sm:px-6 lg:px-8">
 

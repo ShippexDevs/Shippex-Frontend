@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import LogoutConfirmModal from "../components/common/LogoutConfirmModal";
 
 const navigation = [
   {
@@ -49,6 +50,7 @@ function MobileLayout({ children }) {
   const { user, logout } = useAuth();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
   const username =
     user?.name ||
@@ -71,8 +73,16 @@ function MobileLayout({ children }) {
     navigate(path);
   };
 
+  // Open confirmation modal
   const handleLogout = () => {
     setMenuOpen(false);
+    setLogoutModalOpen(true);
+  };
+
+  // Actually logout only after confirmation
+  const handleLogoutConfirm = () => {
+    setLogoutModalOpen(false);
+
     logout();
 
     navigate("/login", {
@@ -84,7 +94,6 @@ function MobileLayout({ children }) {
     <div className="min-h-screen bg-[#F5F8FA] text-slate-900">
 
       {/* Mobile overlay */}
-
       {menuOpen && (
         <button
           type="button"
@@ -101,7 +110,6 @@ function MobileLayout({ children }) {
       )}
 
       {/* Mobile drawer */}
-
       <aside
         className={`
           fixed
@@ -126,7 +134,6 @@ function MobileLayout({ children }) {
       >
 
         {/* Drawer header */}
-
         <div className="flex h-[76px] items-center justify-between border-b border-white/10 px-5">
 
           <button
@@ -134,7 +141,6 @@ function MobileLayout({ children }) {
             onClick={() => handleNavigate("/")}
             className="flex items-center gap-3"
           >
-
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
               <Ship size={21} />
             </div>
@@ -148,7 +154,6 @@ function MobileLayout({ children }) {
                 Crew Supply
               </p>
             </div>
-
           </button>
 
           <button
@@ -162,6 +167,7 @@ function MobileLayout({ children }) {
               hover:bg-white/10
               hover:text-white
             "
+            aria-label="Close navigation"
           >
             <X size={19} />
           </button>
@@ -169,19 +175,14 @@ function MobileLayout({ children }) {
         </div>
 
         {/* User */}
-
         <div className="border-b border-white/10 px-5 py-5">
-
           <div className="flex items-center gap-3">
 
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 font-bold">
-              {username
-                .charAt(0)
-                .toUpperCase()}
+              {username.charAt(0).toUpperCase()}
             </div>
 
             <div className="min-w-0">
-
               <p className="truncate text-sm font-semibold">
                 {username}
               </p>
@@ -189,15 +190,12 @@ function MobileLayout({ children }) {
               <p className="text-xs text-slate-400">
                 Ship Crew
               </p>
-
             </div>
 
           </div>
-
         </div>
 
-        {/* Navigation */}
-
+        {/* Drawer navigation */}
         <nav className="flex-1 px-3 py-5">
 
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -205,7 +203,6 @@ function MobileLayout({ children }) {
           </p>
 
           <div className="space-y-1">
-
             {navigation.map((item) => (
               <CustomerNavItem
                 key={item.path}
@@ -216,13 +213,11 @@ function MobileLayout({ children }) {
                 }
               />
             ))}
-
           </div>
 
         </nav>
 
         {/* Logout */}
-
         <div className="border-t border-white/10 p-3">
 
           <button
@@ -254,8 +249,7 @@ function MobileLayout({ children }) {
 
       </aside>
 
-      {/* Desktop / Mobile header */}
-
+      {/* App User Header */}
       <header
         className="
           sticky
@@ -268,9 +262,9 @@ function MobileLayout({ children }) {
           backdrop-blur-md
         "
       >
-
         <div
           className="
+            relative
             mx-auto
             flex
             h-[70px]
@@ -283,8 +277,7 @@ function MobileLayout({ children }) {
           "
         >
 
-          {/* Mobile menu */}
-
+          {/* Hamburger */}
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
@@ -294,25 +287,25 @@ function MobileLayout({ children }) {
               text-slate-600
               transition
               hover:bg-slate-100
-              lg:hidden
             "
             aria-label="Open navigation"
           >
             <Menu size={22} />
           </button>
 
-          {/* Logo */}
-
+          {/* Centered Shippex logo */}
           <button
             type="button"
             onClick={() => navigate("/")}
             className="
+              absolute
+              left-1/2
               flex
+              -translate-x-1/2
               items-center
               gap-2.5
             "
           >
-
             <div
               className="
                 flex
@@ -321,129 +314,57 @@ function MobileLayout({ children }) {
                 items-center
                 justify-center
                 rounded-xl
-                bg-[#14283D]
+                bg-[#087E8B]
                 text-white
               "
             >
-              <Ship size={19} />
+              <span className="text-sm font-semibold">
+                S
+              </span>
             </div>
 
             <div className="text-left">
-
               <p className="text-base font-bold tracking-tight text-[#14283D]">
                 Shippex
               </p>
 
-              <p className="hidden text-[9px] font-medium uppercase tracking-[0.16em] text-slate-400 sm:block">
-                Crew Supply
+              <p className="text-[9px] font-medium uppercase tracking-[0.16em] text-slate-400">
+                Ship Supplies
               </p>
-
             </div>
-
           </button>
 
-          {/* Desktop navigation */}
-
-          <nav className="hidden items-center gap-1 lg:flex">
-
-            {navigation.map((item) => (
-              <DesktopNavItem
-                key={item.path}
-                item={item}
-                active={isActive(item.path)}
-                onClick={() =>
-                  handleNavigate(item.path)
-                }
-              />
-            ))}
-
-          </nav>
-
-          {/* User */}
-
-          <div className="flex items-center gap-3">
-
-            <div className="hidden text-right sm:block">
-
-              <p className="text-sm font-semibold text-slate-800">
-                {username}
-              </p>
-
-              <p className="text-xs text-slate-400">
-                Ship Crew
-              </p>
-
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/profile")}
-              className="
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                rounded-full
-                bg-slate-100
-                text-sm
-                font-bold
-                text-slate-600
-                transition
-                hover:bg-slate-200
-              "
-              aria-label="Open profile"
-            >
-              {username
-                .charAt(0)
-                .toUpperCase()}
-            </button>
-
-            {/* Desktop logout */}
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="
-                hidden
-                items-center
-                gap-2
-                rounded-xl
-                border
-                border-slate-200
-                px-3
-                py-2
-                text-sm
-                font-medium
-                text-slate-600
-                transition
-                hover:border-red-200
-                hover:bg-red-50
-                hover:text-red-600
-                sm:flex
-              "
-            >
-              <LogOut size={16} />
-
-              <span className="hidden xl:inline">
-                Logout
-              </span>
-            </button>
-
-          </div>
+          {/* Profile */}
+          <button
+            type="button"
+            onClick={() => navigate("/profile")}
+            className="
+              ml-auto
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              bg-slate-100
+              text-slate-600
+              transition
+              hover:bg-slate-200
+            "
+            aria-label="Open profile"
+          >
+            <UserCircle size={21} />
+          </button>
 
         </div>
-
       </header>
 
       {/* Page content */}
-
       <main className="min-h-[calc(100vh-70px)] pb-24 lg:pb-8">
         {children}
       </main>
 
       {/* Mobile bottom navigation */}
-
       <nav
         className="
           fixed
@@ -461,7 +382,6 @@ function MobileLayout({ children }) {
           lg:hidden
         "
       >
-
         <div className="mx-auto flex max-w-md items-center justify-around">
 
           {navigation.map((item) => {
@@ -494,7 +414,6 @@ function MobileLayout({ children }) {
                   }
                 `}
               >
-
                 <div
                   className={`
                     flex
@@ -517,14 +436,19 @@ function MobileLayout({ children }) {
                 <span>
                   {item.label}
                 </span>
-
               </button>
             );
           })}
 
         </div>
-
       </nav>
+
+      {/* Logout confirmation */}
+      <LogoutConfirmModal
+        open={logoutModalOpen}
+        onCancel={() => setLogoutModalOpen(false)}
+        onConfirm={handleLogoutConfirm}
+      />
 
     </div>
   );
@@ -559,52 +483,11 @@ function CustomerNavItem({
         }
       `}
     >
-
       <Icon size={18} />
 
       <span>
         {item.label}
       </span>
-
-    </button>
-  );
-}
-
-function DesktopNavItem({
-  item,
-  active,
-  onClick,
-}) {
-  const Icon = item.icon;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        flex
-        items-center
-        gap-2
-        rounded-xl
-        px-3
-        py-2
-        text-sm
-        font-medium
-        transition
-        ${
-          active
-            ? "bg-[#087E8B]/10 text-[#087E8B]"
-            : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
-        }
-      `}
-    >
-
-      <Icon size={16} />
-
-      <span>
-        {item.label}
-      </span>
-
     </button>
   );
 }
