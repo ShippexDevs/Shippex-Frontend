@@ -36,7 +36,43 @@ export async function createOrder(orderData) {
     throw new Error(errorMessage);
   }
 
-  const responseBody = await response.json();
+  return await response.json();
+}
 
-  return responseBody;
+export async function getMyOrders() {
+  const token = localStorage.getItem("shippex_token");
+
+  if (!token) {
+    throw new Error("Authentication token not found.");
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/orders/me`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    let errorMessage = "Failed to retrieve orders.";
+
+    try {
+      const errorBody = await response.json();
+
+      errorMessage =
+        errorBody.message ||
+        errorBody.error ||
+        errorMessage;
+    } catch {
+      // Backend did not return JSON.
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  return await response.json();
 }

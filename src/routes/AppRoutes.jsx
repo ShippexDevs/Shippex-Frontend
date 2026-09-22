@@ -6,6 +6,7 @@ import CategoryProductsPage from "../pages/CategoryProductsPage";
 import ProductDetailsPage from "../pages/ProductDetailsPage";
 import CartPage from "../pages/CartPage";
 import OrdersPage from "../pages/OrdersPage";
+import OrderDetailsPage from "../pages/OrderDetailsPage";
 import ProfilePage from "../pages/ProfilePage";
 import CheckoutPage from "../pages/CheckoutPage";
 import RequestSubmittedPage from "../pages/RequestSubmittedPage";
@@ -64,12 +65,43 @@ function AppRoutes() {
 
                 <Route element={<ProtectedRoute />}>
 
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/orders" element={<OrdersPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/request-submitted" element={<RequestSubmittedPage />} />
-                    <Route path="/requests/:requestId" element={<RequestTrackingPage />} />
+                    <Route
+                        path="/cart"
+                        element={<CartPage />}
+                    />
+
+                    {/* Orders History */}
+                    <Route
+                        path="/orders"
+                        element={<OrdersPage />}
+                    />
+
+                    {/* Individual Order Details */}
+                    <Route
+                        path="/orders/:orderNumber"
+                        element={<OrderDetailsPage />}
+                    />
+
+                    <Route
+                        path="/profile"
+                        element={<ProfilePage />}
+                    />
+
+                    <Route
+                        path="/checkout"
+                        element={<CheckoutPage />}
+                    />
+
+                    <Route
+                        path="/request-submitted"
+                        element={<RequestSubmittedPage />}
+                    />
+
+                    {/* Existing request tracking flow */}
+                    <Route
+                        path="/requests/:requestId"
+                        element={<RequestTrackingPage />}
+                    />
 
                 </Route>
 
