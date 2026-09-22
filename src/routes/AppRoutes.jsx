@@ -29,7 +29,6 @@ function AppRoutes() {
             <ScrollToTop />
 
             <Routes>
-
                 {/* =========================
                     Public Routes
                 ========================== */}
@@ -64,7 +63,6 @@ function AppRoutes() {
                     element={<LoginPage />}
                 />
 
-
                 {/* =========================
                     Admin Public Routes
                 ========================== */}
@@ -74,15 +72,12 @@ function AppRoutes() {
                     element={<AdminLoginPage />}
                 />
 
-
                 {/* =========================
                     Protected Admin Routes
                 ========================== */}
 
                 <Route element={<AdminProtectedRoute />}>
-
                     <Route element={<AdminLayout />}>
-
                         <Route
                             path="/admin/home"
                             element={<AdminHomePage />}
@@ -92,18 +87,14 @@ function AppRoutes() {
                             path="/admin/change-password"
                             element={<ChangePasswordPage />}
                         />
-
                     </Route>
-
                 </Route>
-
 
                 {/* =========================
                     Protected Customer Routes
                 ========================== */}
 
                 <Route element={<ProtectedRoute />}>
-
                     <Route
                         path="/cart"
                         element={<CartPage />}
@@ -144,9 +135,7 @@ function AppRoutes() {
                         path="/requests/:requestId"
                         element={<RequestTrackingPage />}
                     />
-
                 </Route>
-
             </Routes>
         </>
     );
