@@ -23,7 +23,6 @@ function QuantitySelector({
           event.stopPropagation();
           onDecrease();
         }}
-        disabled={quantity <= 1}
         className="
           flex
           h-8
@@ -35,8 +34,7 @@ function QuantitySelector({
           transition
           hover:bg-slate-50
           hover:text-slate-900
-          disabled:cursor-not-allowed
-          disabled:opacity-30
+          active:scale-95
         "
       >
         <Minus size={13} />
@@ -77,6 +75,7 @@ function QuantitySelector({
           transition
           hover:bg-slate-50
           hover:text-slate-900
+          active:scale-95
         "
       >
         <Plus size={13} />
