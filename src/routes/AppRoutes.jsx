@@ -22,6 +22,7 @@ import AdminHomePage from "../admin/pages/AdminHomePage";
 import ChangePasswordPage from "../admin/pages/ChangePasswordPage";
 import AdminProtectedRoute from "../admin/components/auth/AdminProtectedRoute";
 import AdminLayout from "../admin/components/layout/AdminLayout";
+import AdminOrdersPage from "../admin/pages/AdminOrdersPage";
 
 function AppRoutes() {
     return (
@@ -82,7 +83,10 @@ function AppRoutes() {
                             path="/admin/home"
                             element={<AdminHomePage />}
                         />
-
+                        <Route
+                            path="/admin/orders"
+                            element={<AdminOrdersPage />}
+                        />
                         <Route
                             path="/admin/change-password"
                             element={<ChangePasswordPage />}
