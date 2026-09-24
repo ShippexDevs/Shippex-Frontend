@@ -20,63 +20,95 @@ import ScrollToTop from "../components/common/ScrollToTop";
 import AdminLoginPage from "../admin/pages/AdminLoginPage";
 import AdminHomePage from "../admin/pages/AdminHomePage";
 import ChangePasswordPage from "../admin/pages/ChangePasswordPage";
-import AdminProtectedRoute
-    from "../admin/components/auth/AdminProtectedRoute";
+import AdminProtectedRoute from "../admin/components/auth/AdminProtectedRoute";
+import AdminLayout from "../admin/components/layout/AdminLayout";
 
 function AppRoutes() {
-
     return (
         <>
             <ScrollToTop />
 
             <Routes>
+                {/* =========================
+                    Public Routes
+                ========================== */}
 
-                {/* Public Routes */}
+                <Route
+                    path="/"
+                    element={<HomePage />}
+                />
 
-                <Route path="/" element={<HomePage />} />
-                <Route path="/categories" element={<CategoriesPage />} />
-                <Route path="/categories/:slug" element={<CategoryProductsPage />} />
-                <Route path="/product/:id" element={<ProductDetailsPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/login" element={<LoginPage />} />
+                <Route
+                    path="/categories"
+                    element={<CategoriesPage />}
+                />
 
-                {/* Admin Routes */}
+                <Route
+                    path="/categories/:slug"
+                    element={<CategoryProductsPage />}
+                />
+
+                <Route
+                    path="/product/:id"
+                    element={<ProductDetailsPage />}
+                />
+
+                <Route
+                    path="/register"
+                    element={<RegisterPage />}
+                />
+
+                <Route
+                    path="/login"
+                    element={<LoginPage />}
+                />
+
+                {/* =========================
+                    Admin Public Routes
+                ========================== */}
 
                 <Route
                     path="/admin/login"
                     element={<AdminLoginPage />}
                 />
 
+                {/* =========================
+                    Protected Admin Routes
+                ========================== */}
+
                 <Route element={<AdminProtectedRoute />}>
+                    <Route element={<AdminLayout />}>
+                        <Route
+                            path="/admin/home"
+                            element={<AdminHomePage />}
+                        />
 
-                    <Route
-                        path="/admin/home"
-                        element={<AdminHomePage />}
-                    />
-
-                    <Route
-                        path="/admin/change-password"
-                        element={<ChangePasswordPage />}
-                    />
-
+                        <Route
+                            path="/admin/change-password"
+                            element={<ChangePasswordPage />}
+                        />
+                    </Route>
                 </Route>
 
-                {/* Customer Protected Routes */}
+                {/* =========================
+                    Protected Customer Routes
+                ========================== */}
 
                 <Route element={<ProtectedRoute />}>
-
                     <Route
                         path="/cart"
                         element={<CartPage />}
                     />
 
                     {/* Orders History */}
+
                     <Route
                         path="/orders"
                         element={<OrdersPage />}
                     />
 
                     {/* Individual Order Details */}
+
                     <Route
                         path="/orders/:orderNumber"
                         element={<OrderDetailsPage />}
@@ -97,16 +129,14 @@ function AppRoutes() {
                         element={<RequestSubmittedPage />}
                     />
 
-                    {/* Existing request tracking flow */}
+                    {/* Existing Request Tracking Flow */}
+
                     <Route
                         path="/requests/:requestId"
                         element={<RequestTrackingPage />}
                     />
-
                 </Route>
-
             </Routes>
-
         </>
     );
 }

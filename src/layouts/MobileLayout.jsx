@@ -94,6 +94,7 @@ function MobileLayout({ children }) {
     <div className="min-h-screen bg-[#F5F8FA] text-slate-900">
 
       {/* Mobile overlay */}
+
       {menuOpen && (
         <button
           type="button"
@@ -109,7 +110,9 @@ function MobileLayout({ children }) {
         />
       )}
 
+
       {/* Mobile drawer */}
+
       <aside
         className={`
           fixed
@@ -134,6 +137,7 @@ function MobileLayout({ children }) {
       >
 
         {/* Drawer header */}
+
         <div className="flex h-[76px] items-center justify-between border-b border-white/10 px-5">
 
           <button
@@ -141,11 +145,13 @@ function MobileLayout({ children }) {
             onClick={() => handleNavigate("/")}
             className="flex items-center gap-3"
           >
+
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
               <Ship size={21} />
             </div>
 
             <div className="text-left">
+
               <p className="text-sm font-bold">
                 Shippex
               </p>
@@ -153,7 +159,9 @@ function MobileLayout({ children }) {
               <p className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
                 Crew Supply
               </p>
+
             </div>
+
           </button>
 
           <button
@@ -174,8 +182,11 @@ function MobileLayout({ children }) {
 
         </div>
 
+
         {/* User */}
+
         <div className="border-b border-white/10 px-5 py-5">
+
           <div className="flex items-center gap-3">
 
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 font-bold">
@@ -183,6 +194,7 @@ function MobileLayout({ children }) {
             </div>
 
             <div className="min-w-0">
+
               <p className="truncate text-sm font-semibold">
                 {username}
               </p>
@@ -190,12 +202,16 @@ function MobileLayout({ children }) {
               <p className="text-xs text-slate-400">
                 Ship Crew
               </p>
+
             </div>
 
           </div>
+
         </div>
 
+
         {/* Drawer navigation */}
+
         <nav className="flex-1 px-3 py-5">
 
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -203,6 +219,7 @@ function MobileLayout({ children }) {
           </p>
 
           <div className="space-y-1">
+
             {navigation.map((item) => (
               <CustomerNavItem
                 key={item.path}
@@ -213,11 +230,14 @@ function MobileLayout({ children }) {
                 }
               />
             ))}
+
           </div>
 
         </nav>
 
+
         {/* Logout */}
+
         <div className="border-t border-white/10 p-3">
 
           <button
@@ -238,18 +258,22 @@ function MobileLayout({ children }) {
               hover:text-red-300
             "
           >
+
             <LogOut size={18} />
 
             <span>
               Logout
             </span>
+
           </button>
 
         </div>
 
       </aside>
 
+
       {/* App User Header */}
+
       <header
         className="
           sticky
@@ -262,6 +286,7 @@ function MobileLayout({ children }) {
           backdrop-blur-md
         "
       >
+
         <div
           className="
             relative
@@ -278,6 +303,7 @@ function MobileLayout({ children }) {
         >
 
           {/* Hamburger */}
+
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
@@ -293,7 +319,9 @@ function MobileLayout({ children }) {
             <Menu size={22} />
           </button>
 
+
           {/* Centered Shippex logo */}
+
           <button
             type="button"
             onClick={() => navigate("/")}
@@ -306,6 +334,7 @@ function MobileLayout({ children }) {
               gap-2.5
             "
           >
+
             <div
               className="
                 flex
@@ -324,6 +353,7 @@ function MobileLayout({ children }) {
             </div>
 
             <div className="text-left">
+
               <p className="text-base font-bold tracking-tight text-[#14283D]">
                 Shippex
               </p>
@@ -331,10 +361,14 @@ function MobileLayout({ children }) {
               <p className="text-[9px] font-medium uppercase tracking-[0.16em] text-slate-400">
                 Ship Supplies
               </p>
+
             </div>
+
           </button>
 
+
           {/* Profile */}
+
           <button
             type="button"
             onClick={() => navigate("/profile")}
@@ -357,14 +391,19 @@ function MobileLayout({ children }) {
           </button>
 
         </div>
+
       </header>
 
+
       {/* Page content */}
+
       <main className="min-h-[calc(100vh-70px)] pb-24 lg:pb-8">
         {children}
       </main>
 
+
       {/* Mobile bottom navigation */}
+
       <nav
         className="
           fixed
@@ -382,9 +421,11 @@ function MobileLayout({ children }) {
           lg:hidden
         "
       >
+
         <div className="mx-auto flex max-w-md items-center justify-around">
 
           {navigation.map((item) => {
+
             const Icon = item.icon;
             const active = isActive(item.path);
 
@@ -414,6 +455,7 @@ function MobileLayout({ children }) {
                   }
                 `}
               >
+
                 <div
                   className={`
                     flex
@@ -436,17 +478,24 @@ function MobileLayout({ children }) {
                 <span>
                   {item.label}
                 </span>
+
               </button>
             );
+
           })}
 
         </div>
+
       </nav>
 
+
       {/* Logout confirmation */}
+
       <LogoutConfirmModal
         open={logoutModalOpen}
-        onCancel={() => setLogoutModalOpen(false)}
+        onCancel={() =>
+          setLogoutModalOpen(false)
+        }
         onConfirm={handleLogoutConfirm}
       />
 
@@ -454,11 +503,13 @@ function MobileLayout({ children }) {
   );
 }
 
+
 function CustomerNavItem({
   item,
   active,
   onClick,
 }) {
+
   const Icon = item.icon;
 
   return (
@@ -483,11 +534,13 @@ function CustomerNavItem({
         }
       `}
     >
+
       <Icon size={18} />
 
       <span>
         {item.label}
       </span>
+
     </button>
   );
 }
