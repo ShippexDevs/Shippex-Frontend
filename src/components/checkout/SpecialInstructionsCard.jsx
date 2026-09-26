@@ -6,7 +6,6 @@ function SpecialInstructionsCard({
     orderInstructions: "",
   },
   onChange,
-  errors = {},
 }) {
   const handleChange = (field, value) => {
     onChange?.({
@@ -53,6 +52,9 @@ function SpecialInstructionsCard({
 
           <p className="mt-1 text-sm text-slate-500">
             Add instructions to help us prepare and deliver your order.
+            <span className="ml-1 text-xs text-slate-400">
+              (Optional)
+            </span>
           </p>
         </div>
       </div>
@@ -65,6 +67,9 @@ function SpecialInstructionsCard({
           className="mb-2 block text-sm font-medium text-slate-700"
         >
           Delivery Instructions
+          <span className="ml-1 text-xs font-normal text-slate-400">
+            (Optional)
+          </span>
         </label>
 
         <div className="relative">
@@ -90,11 +95,12 @@ function SpecialInstructionsCard({
             }
             rows={4}
             placeholder="Example: Call before arrival and deliver to the starboard gangway."
-            className={`
+            className="
               w-full
               resize-none
               rounded-2xl
               border
+              border-slate-200
               bg-white
               py-3.5
               pl-11
@@ -104,20 +110,10 @@ function SpecialInstructionsCard({
               outline-none
               transition
               placeholder:text-slate-400
-              ${
-                errors.deliveryInstructions
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-slate-200 focus:border-[#087E8B]"
-              }
-            `}
+              focus:border-[#087E8B]
+            "
           />
         </div>
-
-        {errors.deliveryInstructions && (
-          <p className="mt-1.5 text-xs text-red-500">
-            {errors.deliveryInstructions}
-          </p>
-        )}
       </div>
 
       {/* Order Instructions */}
@@ -128,6 +124,9 @@ function SpecialInstructionsCard({
           className="mb-2 block text-sm font-medium text-slate-700"
         >
           Order Instructions
+          <span className="ml-1 text-xs font-normal text-slate-400">
+            (Optional)
+          </span>
         </label>
 
         <div className="relative">
@@ -153,11 +152,12 @@ function SpecialInstructionsCard({
             }
             rows={4}
             placeholder="Example: Keep all items dry and properly packed."
-            className={`
+            className="
               w-full
               resize-none
               rounded-2xl
               border
+              border-slate-200
               bg-white
               py-3.5
               pl-11
@@ -167,20 +167,10 @@ function SpecialInstructionsCard({
               outline-none
               transition
               placeholder:text-slate-400
-              ${
-                errors.orderInstructions
-                  ? "border-red-400 focus:border-red-500"
-                  : "border-slate-200 focus:border-[#087E8B]"
-              }
-            `}
+              focus:border-[#087E8B]
+            "
           />
         </div>
-
-        {errors.orderInstructions && (
-          <p className="mt-1.5 text-xs text-red-500">
-            {errors.orderInstructions}
-          </p>
-        )}
       </div>
     </section>
   );
