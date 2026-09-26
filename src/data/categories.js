@@ -1,5 +1,6 @@
 import {
   Apple,
+  Cherry,
   Coffee,
   ShoppingBasket,
   Pill,
@@ -22,6 +23,15 @@ export const categories = [
 
   {
     id: 2,
+    name: "Fruits",
+    slug: "fruits",
+    icon: Cherry,
+    image: null,
+    description: "Fresh and delicious fruits delivered to your vessel.",
+  },
+
+  {
+    id: 3,
     name: "Beverages",
     slug: "beverages",
     icon: Coffee,
@@ -30,7 +40,7 @@ export const categories = [
   },
 
   {
-    id: 3,
+    id: 4,
     name: "Groceries",
     slug: "groceries",
     icon: ShoppingBasket,
@@ -39,7 +49,7 @@ export const categories = [
   },
 
   {
-    id: 4,
+    id: 5,
     name: "Medicines",
     slug: "medicines",
     icon: Pill,
@@ -48,7 +58,7 @@ export const categories = [
   },
 
   {
-    id: 5,
+    id: 6,
     name: "Toiletries",
     slug: "toiletries",
     icon: Bath,
@@ -57,7 +67,7 @@ export const categories = [
   },
 
   {
-    id: 6,
+    id: 7,
     name: "Ship Essentials",
     slug: "ship-essentials",
     icon: Package,
@@ -66,7 +76,7 @@ export const categories = [
   },
 
   {
-    id: 7,
+    id: 8,
     name: "Safety Equipment",
     slug: "safety-equipment",
     icon: Shield,
@@ -75,7 +85,7 @@ export const categories = [
   },
 
   {
-    id: 8,
+    id: 9,
     name: "Electronics",
     slug: "electronics",
     icon: Smartphone,
@@ -84,7 +94,7 @@ export const categories = [
   },
 
   {
-    id: 9,
+    id: 10,
     name: "Chocolates",
     slug: "chocolates",
     icon: Candy,
