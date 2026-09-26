@@ -245,12 +245,14 @@ function AdminOrdersPage() {
                                 className="animate-pulse rounded-2xl border border-slate-200 bg-white p-5"
                             >
                                 <div className="flex items-center justify-between">
+
                                     <div className="space-y-2">
                                         <div className="h-4 w-44 rounded bg-slate-200" />
                                         <div className="h-3 w-28 rounded bg-slate-100" />
                                     </div>
 
                                     <div className="h-7 w-24 rounded-full bg-slate-200" />
+
                                 </div>
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -263,6 +265,7 @@ function AdminOrdersPage() {
                                     <div className="h-12 rounded-xl bg-slate-100" />
                                     <div className="h-12 rounded-xl bg-slate-100" />
                                 </div>
+
                             </div>
                         ))}
 
@@ -386,7 +389,7 @@ function AdminOrdersPage() {
 
                                         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
 
-                                            {/* User */}
+                                            {/* Customer */}
 
                                             <div className="rounded-xl bg-slate-50 p-3.5">
 
@@ -403,10 +406,23 @@ function AdminOrdersPage() {
 
                                                 </div>
 
-                                                <p className="mt-2 truncate text-sm font-semibold text-slate-700">
-                                                    {order.userId ||
-                                                        "Not available"}
+                                                <p className="mt-2 truncate text-sm font-semibold text-slate-800">
+                                                    {order.customer?.name ||
+                                                        order.customer?.username ||
+                                                        "Customer unavailable"}
                                                 </p>
+
+                                                {order.customer?.email && (
+                                                    <p className="mt-1 truncate text-xs text-slate-500">
+                                                        {order.customer.email}
+                                                    </p>
+                                                )}
+
+                                                {order.customer?.username && (
+                                                    <p className="mt-1 truncate text-xs text-slate-400">
+                                                        @{order.customer.username}
+                                                    </p>
+                                                )}
 
                                             </div>
 
@@ -684,7 +700,11 @@ function AdminOrdersPage() {
                                                                   ? ` at ${order.estimatedDeliveryTime}`
                                                                   : ""
                                                           }`
-                                                        : "Not specified"}
+                                                        : order.estimatedDeliveryDateTime
+                                                          ? formatDateTime(
+                                                                order.estimatedDeliveryDateTime
+                                                            )
+                                                          : "Not specified"}
                                                 </p>
 
                                             </div>
