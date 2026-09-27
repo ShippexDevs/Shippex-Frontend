@@ -23,13 +23,11 @@ const ORDER_STATUSES = [
     "CANCELLED",
 ];
 
-const STATUS_CHANGE_OPTIONS = [
-    "PLACED",
-    "CONFIRMED",
-    "OUT_FOR_DELIVERY",
-    "DELIVERED",
-    "CANCELLED",
-];
+const ALLOWED_STATUS_TRANSITIONS = {
+    PLACED: ["CANCELLED", "CONFIRMED"],
+    CONFIRMED: ["CANCELLED", "OUT_FOR_DELIVERY"],
+    OUT_FOR_DELIVERY: ["DELIVERED", "CANCELLED"],
+};
 
 function Detail({ label, value }) {
     return (
@@ -51,6 +49,7 @@ function AdminOrdersPage() {
     const [statusDrafts, setStatusDrafts] = useState({});
     const [statusNotice, setStatusNotice] = useState({});
     const [statusMenuOpenId, setStatusMenuOpenId] = useState(null);
+    const [statusUpdatingId, setStatusUpdatingId] = useState(null);
 
     const fetchOrders = async () => {
         try {
@@ -170,6 +169,7 @@ function AdminOrdersPage() {
 
     const getOrderId = (order) => order.id || order.orderNumber;
     const getStatusDraft = (order) => statusDrafts[getOrderId(order)] ?? order.status ?? "PLACED";
+    const getAllowedStatuses = (order) => ALLOWED_STATUS_TRANSITIONS[order.status] ?? [];
     const setStatusDraft = (order, status) => {
         const id = getOrderId(order);
         setStatusDrafts((drafts) => ({ ...drafts, [id]: status }));
@@ -183,13 +183,44 @@ function AdminOrdersPage() {
         setStatusNotice((notices) => ({ ...notices, [id]: "" }));
     };
 
-    const prepareStatusChange = (order) => {
+    const prepareStatusChange = async (order) => {
         const id = getOrderId(order);
         if (getStatusDraft(order) === order.status) {
             setStatusNotice((notices) => ({ ...notices, [id]: "Choose a different status first." }));
             return;
         }
-        setStatusNotice((notices) => ({ ...notices, [id]: "Status update is ready. Connect the status update API to save this change." }));
+
+        const requestedStatus = getStatusDraft(order);
+        if (!getAllowedStatuses(order).includes(requestedStatus)) {
+            setStatusNotice((notices) => ({ ...notices, [id]: "That status change is not allowed." }));
+            return;
+        }
+
+        setStatusUpdatingId(id);
+        setStatusNotice((notices) => ({ ...notices, [id]: "Updating status..." }));
+
+        try {
+            const response = await adminAxios.patch(`/api/admin/orders/${encodeURIComponent(id)}/status`, {
+                status: requestedStatus,
+            });
+            const updatedStatus = response.data?.data?.status || response.data?.status || requestedStatus;
+
+            setOrders((currentOrders) => currentOrders.map((currentOrder) =>
+                getOrderId(currentOrder) === id
+                    ? { ...currentOrder, status: updatedStatus }
+                    : currentOrder
+            ));
+            setStatusDrafts((drafts) => ({ ...drafts, [id]: updatedStatus }));
+            setStatusNotice((notices) => ({ ...notices, [id]: "Order status updated successfully." }));
+        } catch (updateError) {
+            console.error("Failed to update order status:", updateError);
+            setStatusNotice((notices) => ({
+                ...notices,
+                [id]: updateError.response?.data?.message || "Unable to update order status. Please try again.",
+            }));
+        } finally {
+            setStatusUpdatingId(null);
+        }
     };
 
     return (
@@ -296,13 +327,13 @@ function AdminOrdersPage() {
                                                                         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
                                                                             <div className="relative w-full sm:max-w-xs">
                                                                                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500" id={`new-status-label-${orderId}`}>New Status</label>
-                                                                                <button type="button" aria-labelledby={`new-status-label-${orderId}`} aria-haspopup="listbox" aria-expanded={statusMenuOpenId === orderId} onClick={() => setStatusMenuOpenId(statusMenuOpenId === orderId ? null : orderId)} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-left shadow-sm transition hover:border-[#087E8B]/50 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-[#087E8B]/10">
+                                                                                <button type="button" aria-labelledby={`new-status-label-${orderId}`} aria-haspopup="listbox" aria-expanded={statusMenuOpenId === orderId} disabled={!getAllowedStatuses(order).length || statusUpdatingId === orderId} onClick={() => setStatusMenuOpenId(statusMenuOpenId === orderId ? null : orderId)} className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-left shadow-sm transition hover:border-[#087E8B]/50 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-[#087E8B]/10 disabled:cursor-not-allowed disabled:opacity-60">
                                                                                     <span className="flex items-center gap-3"><span className={`h-2.5 w-2.5 rounded-full ${getStatusDotClass(getStatusDraft(order))}`} /><span className="text-sm font-semibold text-slate-800">{formatStatus(getStatusDraft(order))}</span></span>
                                                                                     <ChevronDown size={17} className={`text-slate-400 transition-transform ${statusMenuOpenId === orderId ? "rotate-180" : ""}`} />
                                                                                 </button>
-                                                                                {statusMenuOpenId === orderId && <div role="listbox" aria-labelledby={`new-status-label-${orderId}`} className="absolute left-0 top-full z-30 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-slate-900/5">{STATUS_CHANGE_OPTIONS.map((status) => <button key={status} type="button" role="option" aria-selected={getStatusDraft(order) === status} onClick={() => setStatusDraft(order, status)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${getStatusDraft(order) === status ? "bg-[#087E8B]/[0.08] text-[#087E8B]" : "text-slate-700 hover:bg-slate-50"}`}><span className="flex items-center gap-3"><span className={`h-2.5 w-2.5 rounded-full ${getStatusDotClass(status)}`} />{formatStatus(status)}</span>{getStatusDraft(order) === status && <Check size={16} />}</button>)}</div>}
+                                                                                {statusMenuOpenId === orderId && <div role="listbox" aria-labelledby={`new-status-label-${orderId}`} className="absolute left-0 top-full z-30 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-slate-900/5">{getAllowedStatuses(order).map((status) => <button key={status} type="button" role="option" aria-selected={getStatusDraft(order) === status} onClick={() => setStatusDraft(order, status)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${getStatusDraft(order) === status ? "bg-[#087E8B]/[0.08] text-[#087E8B]" : "text-slate-700 hover:bg-slate-50"}`}><span className="flex items-center gap-3"><span className={`h-2.5 w-2.5 rounded-full ${getStatusDotClass(status)}`} />{formatStatus(status)}</span>{getStatusDraft(order) === status && <Check size={16} />}</button>)}</div>}
                                                                             </div>
-                                                                            <div className="flex gap-2"><button type="button" onClick={() => prepareStatusChange(order)} className="rounded-xl bg-[#087E8B] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#066b76] hover:shadow-md">Update Status</button><button type="button" onClick={() => cancelStatusChange(order)} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Cancel</button></div>
+                                                                            <div className="flex gap-2"><button type="button" onClick={() => prepareStatusChange(order)} disabled={statusUpdatingId === orderId} className="rounded-xl bg-[#087E8B] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#066b76] hover:shadow-md disabled:cursor-wait disabled:opacity-60">{statusUpdatingId === orderId ? "Updating..." : "Update Status"}</button><button type="button" onClick={() => cancelStatusChange(order)} disabled={statusUpdatingId === orderId} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">Cancel</button></div>
                                                                         </div>
                                                                         {statusNotice[orderId] && <p className="mt-3 text-sm text-slate-500" role="status">{statusNotice[orderId]}</p>}
                                                                     </section>
