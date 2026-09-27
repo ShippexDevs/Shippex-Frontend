@@ -30,6 +30,7 @@ function ArrivalDetailsCard({
   });
 
   const calendarRef = useRef(null);
+  const timeInputRef = useRef(null);
 
   const handleChange = (field, value) => {
     onChange?.({
@@ -277,7 +278,7 @@ function ArrivalDetailsCard({
                 left-0
                 right-0
                 top-[calc(100%+8px)]
-                z-50
+                z-10
                 overflow-hidden
                 rounded-2xl
                 border
@@ -502,7 +503,7 @@ function ArrivalDetailsCard({
 
       {/* Time */}
 
-      <div className="mt-5">
+      <div className="relative z-20 mt-5">
         <label
           htmlFor="estimatedDeliveryTime"
           className="mb-2 block text-sm font-medium text-slate-700"
@@ -524,8 +525,20 @@ function ArrivalDetailsCard({
           />
 
           <input
+            ref={timeInputRef}
             id="estimatedDeliveryTime"
             type="time"
+            onClick={() => {
+              const input = timeInputRef.current;
+
+              if (typeof input?.showPicker === "function") {
+                try {
+                  input.showPicker();
+                } catch {
+                  input.focus();
+                }
+              }
+            }}
             value={
               deliveryDetails.estimatedDeliveryTime || ""
             }
@@ -540,6 +553,7 @@ function ArrivalDetailsCard({
               rounded-2xl
               border
               bg-white
+              cursor-pointer
               py-3.5
               pl-11
               pr-4

@@ -105,25 +105,22 @@ function CheckoutPage() {
         "Delivery time is required.";
     }
 
-    if (!instructions.deliveryInstructions.trim()) {
-      newErrors.deliveryInstructions =
-        "Delivery instructions are required.";
-    }
-
-    if (!instructions.orderInstructions.trim()) {
-      newErrors.orderInstructions =
-        "Order instructions are required.";
-    }
-
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
   };
 
 const handleSubmit = async () => {
+  if (submitting) {
+    return;
+  }
+
   if (!validateForm()) {
     return;
   }
+
+  setSubmitting(true);
+  setErrors((current) => ({ ...current, submit: "" }));
 
   const orderRequest = {
     items: cartItems.map((item) => ({
@@ -138,11 +135,7 @@ const handleSubmit = async () => {
       portName: deliveryDestination.portName.trim(),
     },
 
-    estimatedDeliveryDate:
-      deliveryDetails.estimatedDeliveryDate,
-
-    estimatedDeliveryTime:
-      deliveryDetails.estimatedDeliveryTime,
+    estimatedDeliveryDateTime: `${deliveryDetails.estimatedDeliveryDate}T${deliveryDetails.estimatedDeliveryTime}:00`,
 
     deliveryInstructions:
       instructions.deliveryInstructions.trim(),
@@ -224,6 +217,8 @@ const handleSubmit = async () => {
         error.message ||
         "Unable to submit supply request.",
     }));
+  } finally {
+    setSubmitting(false);
   }
 };
 

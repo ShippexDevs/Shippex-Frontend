@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import LogoutConfirmModal from "../components/common/LogoutConfirmModal";
 
 const navigation = [
@@ -48,6 +49,7 @@ function MobileLayout({ children }) {
   const location = useLocation();
 
   const { user, logout } = useAuth();
+  const { totalItems } = useCart();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -436,6 +438,11 @@ function MobileLayout({ children }) {
                 onClick={() =>
                   handleNavigate(item.path)
                 }
+                aria-label={
+                  item.label === "Cart" && totalItems > 0
+                    ? `Cart, ${totalItems} items`
+                    : item.label
+                }
                 className={`
                   flex
                   min-w-[60px]
@@ -456,24 +463,33 @@ function MobileLayout({ children }) {
                 `}
               >
 
-                <div
-                  className={`
-                    flex
-                    h-8
-                    w-8
-                    items-center
-                    justify-center
-                    rounded-xl
-                    transition
-                    ${
-                      active
-                        ? "bg-[#087E8B]/10"
-                        : ""
-                    }
-                  `}
-                >
-                  <Icon size={18} />
-                </div>
+                  <div
+                    className={`
+                      relative
+                      flex
+                      h-8
+                      w-8
+                      items-center
+                      justify-center
+                      rounded-xl
+                      transition
+                      ${
+                        active
+                          ? "bg-[#087E8B]/10"
+                          : ""
+                      }
+                    `}
+                  >
+                    <Icon size={18} />
+                    {item.label === "Cart" && totalItems > 0 && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-[#087E8B] px-1 text-[9px] font-bold leading-none text-white shadow-sm"
+                      >
+                        {totalItems > 99 ? "99+" : totalItems}
+                      </span>
+                    )}
+                  </div>
 
                 <span>
                   {item.label}

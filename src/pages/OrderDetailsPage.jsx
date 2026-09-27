@@ -93,7 +93,10 @@ function OrderDetailsPage() {
             return "Not specified";
         }
 
-        const [hours, minutes] = timeString.split(":");
+        const timeValue = timeString.includes("T")
+            ? timeString.split("T")[1]
+            : timeString;
+        const [hours, minutes] = timeValue.split(":");
 
         const date = new Date();
 
@@ -454,7 +457,8 @@ function OrderDetailsPage() {
                                     <InfoCard
                                         label="Estimated Delivery Date"
                                         value={formatDate(
-                                            order.estimatedDeliveryDate
+                                            order.estimatedDeliveryDate ||
+                                                order.estimatedDeliveryDateTime
                                         )}
                                         icon={<CalendarDays size={16} />}
                                     />
@@ -462,7 +466,8 @@ function OrderDetailsPage() {
                                     <InfoCard
                                         label="Estimated Delivery Time"
                                         value={formatTime(
-                                            order.estimatedDeliveryTime
+                                            order.estimatedDeliveryTime ||
+                                                order.estimatedDeliveryDateTime
                                         )}
                                         icon={<Clock3 size={16} />}
                                     />
