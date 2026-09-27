@@ -23,6 +23,14 @@ const ORDER_STATUSES = [
     "CANCELLED",
 ];
 
+const STATUS_CHANGE_OPTIONS = [
+    "PLACED",
+    "CONFIRMED",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "CANCELLED",
+];
+
 function Detail({ label, value }) {
     return (
         <div className="rounded-xl bg-slate-50 p-3">
@@ -113,6 +121,7 @@ function AdminOrdersPage() {
             case "CONFIRMED": return "bg-emerald-500";
             case "PROCESSING": return "bg-amber-500";
             case "SHIPPED": return "bg-indigo-500";
+            case "OUT_FOR_DELIVERY": return "bg-indigo-500";
             case "DELIVERED": return "bg-green-500";
             case "CANCELLED": return "bg-red-500";
             default: return "bg-slate-400";
@@ -125,6 +134,7 @@ function AdminOrdersPage() {
             case "CONFIRMED": return "border-emerald-100 bg-emerald-50 text-emerald-700";
             case "PROCESSING": return "border-amber-100 bg-amber-50 text-amber-700";
             case "SHIPPED": return "border-indigo-100 bg-indigo-50 text-indigo-700";
+            case "OUT_FOR_DELIVERY": return "border-indigo-100 bg-indigo-50 text-indigo-700";
             case "DELIVERED": return "border-green-100 bg-green-50 text-green-700";
             case "CANCELLED": return "border-red-100 bg-red-50 text-red-700";
             default: return "border-slate-200 bg-slate-50 text-slate-600";
@@ -290,7 +300,7 @@ function AdminOrdersPage() {
                                                                                     <span className="flex items-center gap-3"><span className={`h-2.5 w-2.5 rounded-full ${getStatusDotClass(getStatusDraft(order))}`} /><span className="text-sm font-semibold text-slate-800">{formatStatus(getStatusDraft(order))}</span></span>
                                                                                     <ChevronDown size={17} className={`text-slate-400 transition-transform ${statusMenuOpenId === orderId ? "rotate-180" : ""}`} />
                                                                                 </button>
-                                                                                {statusMenuOpenId === orderId && <div role="listbox" aria-labelledby={`new-status-label-${orderId}`} className="absolute left-0 top-full z-30 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-slate-900/5">{ORDER_STATUSES.map((status) => <button key={status} type="button" role="option" aria-selected={getStatusDraft(order) === status} onClick={() => setStatusDraft(order, status)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${getStatusDraft(order) === status ? "bg-[#087E8B]/[0.08] text-[#087E8B]" : "text-slate-700 hover:bg-slate-50"}`}><span className="flex items-center gap-3"><span className={`h-2.5 w-2.5 rounded-full ${getStatusDotClass(status)}`} />{formatStatus(status)}</span>{getStatusDraft(order) === status && <Check size={16} />}</button>)}</div>}
+                                                                                {statusMenuOpenId === orderId && <div role="listbox" aria-labelledby={`new-status-label-${orderId}`} className="absolute left-0 top-full z-30 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-slate-900/5">{STATUS_CHANGE_OPTIONS.map((status) => <button key={status} type="button" role="option" aria-selected={getStatusDraft(order) === status} onClick={() => setStatusDraft(order, status)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${getStatusDraft(order) === status ? "bg-[#087E8B]/[0.08] text-[#087E8B]" : "text-slate-700 hover:bg-slate-50"}`}><span className="flex items-center gap-3"><span className={`h-2.5 w-2.5 rounded-full ${getStatusDotClass(status)}`} />{formatStatus(status)}</span>{getStatusDraft(order) === status && <Check size={16} />}</button>)}</div>}
                                                                             </div>
                                                                             <div className="flex gap-2"><button type="button" onClick={() => prepareStatusChange(order)} className="rounded-xl bg-[#087E8B] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#066b76] hover:shadow-md">Update Status</button><button type="button" onClick={() => cancelStatusChange(order)} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Cancel</button></div>
                                                                         </div>
