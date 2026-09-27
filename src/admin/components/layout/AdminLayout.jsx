@@ -23,6 +23,8 @@ import {
     getAdminUsername,
 } from "../../services/tokenStorage";
 
+import LogoutConfirmModal from "../../../components/common/LogoutConfirmModal";
+
 const navigation = [
     {
         label: "Dashboard",
@@ -88,20 +90,29 @@ function AdminLayout() {
     const navigate = useNavigate();
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
     const username = getAdminUsername() || "Administrator";
 
     const handleLogout = () => {
+        setLogoutModalOpen(true);
+    };
+
+    const handleLogoutConfirm = () => {
         clearAdminAuth();
+        setLogoutModalOpen(false);
 
         navigate("/admin/login", {
             replace: true,
         });
     };
 
+    const handleLogoutCancel = () => {
+        setLogoutModalOpen(false);
+    };
+
     return (
         <div className="min-h-screen bg-[#f5f7fa] text-slate-900">
-
             {/* Mobile overlay */}
 
             {sidebarOpen && (
@@ -136,17 +147,16 @@ function AdminLayout() {
                     transition-transform
                     duration-300
                     lg:translate-x-0
-                    ${sidebarOpen
-                        ? "translate-x-0"
-                        : "-translate-x-full"
+                    ${
+                        sidebarOpen
+                            ? "translate-x-0"
+                            : "-translate-x-full"
                     }
                 `}
             >
-
                 {/* Logo */}
 
                 <div className="flex h-[76px] items-center justify-between border-b border-white/10 px-5">
-
                     <button
                         type="button"
                         onClick={() => navigate("/admin/home")}
@@ -170,31 +180,36 @@ function AdminLayout() {
                     <button
                         type="button"
                         onClick={() => setSidebarOpen(false)}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white lg:hidden"
+                        className="
+                            rounded-lg
+                            p-1.5
+                            text-slate-400
+                            hover:bg-white/10
+                            hover:text-white
+                            lg:hidden
+                        "
                     >
                         <X size={19} />
                     </button>
-
                 </div>
 
                 {/* Navigation */}
 
                 <nav className="flex-1 overflow-y-auto px-3 py-5">
-
                     <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                         Management
                     </p>
 
                     <div className="space-y-1">
-
                         {navigation.map((item) => (
                             <SidebarItem
                                 key={item.label}
                                 item={item}
-                                onNavigate={() => setSidebarOpen(false)}
+                                onNavigate={() =>
+                                    setSidebarOpen(false)
+                                }
                             />
                         ))}
-
                     </div>
 
                     <p className="mb-3 mt-8 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -202,23 +217,21 @@ function AdminLayout() {
                     </p>
 
                     <div className="space-y-1">
-
                         {systemNavigation.map((item) => (
                             <SidebarItem
                                 key={item.label}
                                 item={item}
-                                onNavigate={() => setSidebarOpen(false)}
+                                onNavigate={() =>
+                                    setSidebarOpen(false)
+                                }
                             />
                         ))}
-
                     </div>
-
                 </nav>
 
                 {/* Logout */}
 
                 <div className="border-t border-white/10 p-3">
-
                     <button
                         type="button"
                         onClick={handleLogout}
@@ -240,19 +253,15 @@ function AdminLayout() {
                         <LogOut size={18} />
                         Logout
                     </button>
-
                 </div>
-
             </aside>
 
             {/* Main */}
 
             <div className="lg:pl-[250px]">
-
                 {/* Topbar */}
 
                 <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md sm:px-6">
-
                     <button
                         type="button"
                         onClick={() => setSidebarOpen(true)}
@@ -274,7 +283,6 @@ function AdminLayout() {
                     </div>
 
                     <div className="ml-auto flex items-center gap-3">
-
                         <div className="hidden text-right sm:block">
                             <p className="text-sm font-semibold text-slate-800">
                                 {username}
@@ -288,17 +296,21 @@ function AdminLayout() {
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600">
                             {username.charAt(0).toUpperCase()}
                         </div>
-
                     </div>
-
                 </header>
 
                 <main>
                     <Outlet />
                 </main>
-
             </div>
 
+            {/* Logout Confirmation Modal */}
+
+            <LogoutConfirmModal
+                open={logoutModalOpen}
+                onCancel={handleLogoutCancel}
+                onConfirm={handleLogoutConfirm}
+            />
         </div>
     );
 }
@@ -309,7 +321,8 @@ function SidebarItem({ item, onNavigate }) {
 
     const Icon = item.icon;
 
-    const isActive = location.pathname === item.path ||
+    const isActive =
+        location.pathname === item.path ||
         (item.path !== "/admin/home" &&
             location.pathname.startsWith(`${item.path}/`));
 
