@@ -76,3 +76,37 @@ export async function getMyOrders() {
 
     return await response.json();
 }
+
+export async function cancelMyOrder(orderId) {
+    const token = localStorage.getItem("shippex_token");
+
+    if (!token) {
+        throw new Error("Authentication token not found.");
+    }
+
+    const response = await fetch(
+        `${API_BASE_URL}/api/v1/orders/${encodeURIComponent(orderId)}/cancel`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    if (!response.ok) {
+        let errorMessage = "Failed to cancel order.";
+
+        try {
+            const errorBody = await response.json();
+            errorMessage = errorBody.message || errorBody.error || errorMessage;
+        } catch {
+            // Keep default error message
+        }
+
+        throw new Error(errorMessage);
+    }
+
+    return response.status === 204 ? null : await response.json();
+}

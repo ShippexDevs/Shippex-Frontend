@@ -10,11 +10,13 @@ import {
     RefreshCw,
     Ship,
     ShoppingBag,
+    XCircle,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import MobileLayout from "../layouts/MobileLayout";
-import { getMyOrders } from "../api/orderApi.js";
+import ConfirmationModal from "../components/common/ConfirmationModal.jsx";
+import { cancelMyOrder, getMyOrders } from "../api/orderApi.js";
 
 function OrderDetailsPage() {
 
@@ -24,6 +26,9 @@ function OrderDetailsPage() {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [canceling, setCanceling] = useState(false);
+    const [cancelError, setCancelError] = useState("");
+    const [cancelConfirmationOpen, setCancelConfirmationOpen] = useState(false);
 
     const fetchOrder = async () => {
 
@@ -67,6 +72,23 @@ function OrderDetailsPage() {
     useEffect(() => {
         fetchOrder();
     }, [orderNumber]);
+
+    const handleCancelOrder = async () => {
+        if (!order?.id || order.status !== "PLACED" || canceling) return;
+
+        setCancelConfirmationOpen(false);
+        setCanceling(true);
+        setCancelError("");
+        try {
+            await cancelMyOrder(order.id);
+            setOrder((currentOrder) => ({ ...currentOrder, status: "CANCELLED" }));
+        } catch (cancelRequestError) {
+            console.error("Failed to cancel order:", cancelRequestError);
+            setCancelError(cancelRequestError.message || "Unable to cancel order. Please try again.");
+        } finally {
+            setCanceling(false);
+        }
+    };
 
     const formatDate = (dateString) => {
 
@@ -294,15 +316,34 @@ function OrderDetailsPage() {
 
                                     </div>
 
-                                    <span
-                                        className={`inline-flex w-fit items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${getStatusClasses(
-                                            order.status
-                                        )}`}
-                                    >
-                                        {formatStatus(order.status)}
-                                    </span>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <span
+                                            className={`inline-flex w-fit items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${getStatusClasses(
+                                                order.status
+                                            )}`}
+                                        >
+                                            {formatStatus(order.status)}
+                                        </span>
+                                        {order.status === "PLACED" && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setCancelConfirmationOpen(true)}
+                                                disabled={canceling}
+                                                className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-3.5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-60"
+                                            >
+                                                <XCircle size={16} />
+                                                {canceling ? "Cancelling..." : "Cancel Order"}
+                                            </button>
+                                        )}
+                                    </div>
 
                                 </div>
+
+                                {cancelError && (
+                                    <p className="mt-4 text-sm text-red-600" role="alert">
+                                        {cancelError}
+                                    </p>
+                                )}
 
                             </section>
 
@@ -591,6 +632,15 @@ function OrderDetailsPage() {
 
             </div>
 
+            <ConfirmationModal
+                open={cancelConfirmationOpen}
+                title="Confirm order cancellation"
+                message={`Are you sure you want to cancel order ${order?.orderNumber || "this order"}? Its status will change to Cancelled, and you won't be able to undo this action.`}
+                confirmText="Yes, cancel order"
+                cancelText="No, keep my order"
+                onConfirm={handleCancelOrder}
+                onCancel={() => setCancelConfirmationOpen(false)}
+            />
         </MobileLayout>
     );
 }
