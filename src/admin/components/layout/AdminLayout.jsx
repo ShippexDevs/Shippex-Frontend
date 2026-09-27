@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
     Users,
@@ -305,10 +305,13 @@ function AdminLayout() {
 
 function SidebarItem({ item, onNavigate }) {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const Icon = item.icon;
 
-    const isDashboard = item.path === "/admin/home";
+    const isActive = location.pathname === item.path ||
+        (item.path !== "/admin/home" &&
+            location.pathname.startsWith(`${item.path}/`));
 
     return (
         <button
@@ -330,7 +333,7 @@ function SidebarItem({ item, onNavigate }) {
                 text-sm
                 transition
                 ${
-                    isDashboard
+                    isActive
                         ? "bg-[#3674df] text-white shadow-lg shadow-blue-950/20"
                         : "text-slate-300 hover:bg-white/5 hover:text-white"
                 }
@@ -348,7 +351,7 @@ function SidebarItem({ item, onNavigate }) {
                     opacity-0
                     transition
                     group-hover:opacity-50
-                    ${isDashboard ? "hidden" : ""}
+                    ${isActive ? "hidden" : ""}
                 `}
             />
         </button>
