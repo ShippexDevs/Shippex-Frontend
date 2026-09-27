@@ -1,15 +1,11 @@
-import axios from "axios";
 import adminAxios from "./adminAxios";
-
-const BASE_URL =
-    "http://localhost:8080/api/admin";
 
 export const loginAdmin = async (
     loginRequest
 ) => {
 
-    const response = await axios.post(
-        `${BASE_URL}/login`,
+    const response = await adminAxios.post(
+        "/api/admin/login",
         loginRequest
     );
 

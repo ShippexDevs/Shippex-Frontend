@@ -121,15 +121,21 @@ http://localhost:5173
 
 # 🔗 Backend Requirement
 
-The frontend communicates with the Shippex Spring Boot backend.
+The frontend communicates with the Shippex Spring Boot backend. All frontend API clients read the backend address from `VITE_API_BASE_URL`.
 
-Ensure the backend is running before using the application.
+For local development, copy `.env.example` to `.env` and ensure the backend is running before using the application. The default value is:
 
-Default backend URL:
-
+```env
+VITE_API_BASE_URL=http://localhost:8080
 ```
-http://localhost:8080
+
+For production, set `VITE_API_BASE_URL` to the Spring Boot server URL in the deployment environment (or the `.env` file used by Docker Compose). For example:
+
+```env
+VITE_API_BASE_URL=https://api.example.com
 ```
+
+This is the only backend address setting needed by the frontend.
 
 ---
 

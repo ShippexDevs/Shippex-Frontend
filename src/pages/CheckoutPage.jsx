@@ -154,43 +154,7 @@ const handleSubmit = async () => {
   };
 
   try {
-    const token =
-      localStorage.getItem("shippex_token");
-
-    const response = await fetch(
-      "http://localhost:8080/api/v1/orders",
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-
-        body: JSON.stringify(orderRequest),
-      }
-    );
-
-    if (!response.ok) {
-      let message = "Unable to place order.";
-
-      try {
-        const errorBody =
-          await response.json();
-
-        message =
-          errorBody.message ||
-          errorBody.error ||
-          message;
-      } catch {
-        // Backend returned non-JSON response.
-      }
-
-      throw new Error(message);
-    }
-
-    const responseBody =
-      await response.json();
+    const responseBody = await createOrder(orderRequest);
 
     /*
      * Backend structure:

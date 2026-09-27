@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE_URL } from "../config/env.js";
 
 export async function createOrder(orderData) {
     const token = localStorage.getItem("shippex_token");
