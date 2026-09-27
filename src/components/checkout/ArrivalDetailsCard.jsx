@@ -274,11 +274,7 @@ function ArrivalDetailsCard({
           {calendarOpen && (
             <div
               className="
-                absolute
-                left-0
-                right-0
-                top-[calc(100%+8px)]
-                z-10
+                mt-2
                 overflow-hidden
                 rounded-2xl
                 border
@@ -401,10 +397,12 @@ function ArrivalDetailsCard({
                     );
                   }
 
-                  const disabled = isBefore(
+                  const previousMonthDate = isBeforeMonth(
                     date,
-                    today
+                    visibleMonth
                   );
+                  const disabled =
+                    previousMonthDate || isBefore(date, today);
 
                   const selected =
                     selectedDate &&
@@ -414,8 +412,8 @@ function ArrivalDetailsCard({
                     isSameDay(date, today);
 
                   const currentMonth =
-                    date.getMonth() ===
-                    visibleMonth.getMonth();
+                    date.getMonth() === visibleMonth.getMonth() &&
+                    date.getFullYear() === visibleMonth.getFullYear();
 
                   return (
                     <button
@@ -437,13 +435,13 @@ function ArrivalDetailsCard({
                         font-medium
                         transition
                         ${
-                          !currentMonth
-                            ? "text-slate-300"
-                            : disabled
-                              ? "cursor-not-allowed text-slate-300"
-                              : selected
-                                ? "bg-[#087E8B] text-white shadow-sm"
-                                : "text-slate-700 hover:bg-[#EAF7F8] hover:text-[#087E8B]"
+                          disabled
+                            ? "cursor-not-allowed text-slate-300 opacity-50"
+                            : selected
+                              ? "bg-[#087E8B] text-white shadow-sm"
+                              : currentMonth
+                                ? "text-slate-700 hover:bg-[#EAF7F8] hover:text-[#087E8B]"
+                                : "font-semibold text-[#087E8B] hover:bg-[#EAF7F8]"
                         }
                       `}
                     >
@@ -503,7 +501,7 @@ function ArrivalDetailsCard({
 
       {/* Time */}
 
-      <div className="relative z-20 mt-5">
+      <div className="mt-5">
         <label
           htmlFor="estimatedDeliveryTime"
           className="mb-2 block text-sm font-medium text-slate-700"
@@ -653,50 +651,20 @@ function isCurrentMonth(month, today) {
 function getCalendarDays(month) {
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
+  const startingDay = new Date(year, monthIndex, 1).getDay();
 
-  const firstDay = new Date(
-    year,
-    monthIndex,
-    1
+  return Array.from(
+    { length: 42 },
+    (_, index) => new Date(year, monthIndex, index - startingDay + 1)
   );
+}
 
-  const daysInMonth = new Date(
-    year,
-    monthIndex + 1,
-    0
-  ).getDate();
-
-  const startingDay = firstDay.getDay();
-
-  const days = [];
-
-  for (
-    let index = 0;
-    index < startingDay;
-    index += 1
-  ) {
-    days.push(null);
-  }
-
-  for (
-    let day = 1;
-    day <= daysInMonth;
-    day += 1
-  ) {
-    days.push(
-      new Date(
-        year,
-        monthIndex,
-        day
-      )
-    );
-  }
-
-  while (days.length % 7 !== 0) {
-    days.push(null);
-  }
-
-  return days;
+function isBeforeMonth(date, month) {
+  return (
+    date.getFullYear() < month.getFullYear() ||
+    (date.getFullYear() === month.getFullYear() &&
+      date.getMonth() < month.getMonth())
+  );
 }
 
 export default ArrivalDetailsCard;
