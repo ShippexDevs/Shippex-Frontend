@@ -19,15 +19,18 @@ const ORDER_STATUSES = [
     "CONFIRMED",
     "PROCESSING",
     "SHIPPED",
+    "OUT FOR DELIVERY",
     "DELIVERED",
     "CANCELLED",
 ];
 
 const ALLOWED_STATUS_TRANSITIONS = {
     PLACED: ["CANCELLED", "CONFIRMED"],
-    CONFIRMED: ["CANCELLED", "OUT_FOR_DELIVERY"],
-    OUT_FOR_DELIVERY: ["DELIVERED", "CANCELLED"],
+    CONFIRMED: ["CANCELLED", "OUT FOR DELIVERY"],
+    "OUT FOR DELIVERY": ["DELIVERED", "CANCELLED"],
 };
+
+const normalizeStatus = (status) => status?.replaceAll("_", " ").toUpperCase();
 
 function Detail({ label, value }) {
     return (
@@ -115,12 +118,12 @@ function AdminOrdersPage() {
     };
 
     const getStatusDotClass = (status) => {
-        switch (status) {
+        switch (normalizeStatus(status)) {
             case "PLACED": return "bg-blue-500";
             case "CONFIRMED": return "bg-emerald-500";
             case "PROCESSING": return "bg-amber-500";
             case "SHIPPED": return "bg-indigo-500";
-            case "OUT_FOR_DELIVERY": return "bg-indigo-500";
+            case "OUT FOR DELIVERY": return "bg-indigo-500";
             case "DELIVERED": return "bg-green-500";
             case "CANCELLED": return "bg-red-500";
             default: return "bg-slate-400";
@@ -128,12 +131,12 @@ function AdminOrdersPage() {
     };
 
     const getStatusClasses = (status) => {
-        switch (status) {
+        switch (normalizeStatus(status)) {
             case "PLACED": return "border-blue-100 bg-blue-50 text-blue-700";
             case "CONFIRMED": return "border-emerald-100 bg-emerald-50 text-emerald-700";
             case "PROCESSING": return "border-amber-100 bg-amber-50 text-amber-700";
             case "SHIPPED": return "border-indigo-100 bg-indigo-50 text-indigo-700";
-            case "OUT_FOR_DELIVERY": return "border-indigo-100 bg-indigo-50 text-indigo-700";
+            case "OUT FOR DELIVERY": return "border-indigo-100 bg-indigo-50 text-indigo-700";
             case "DELIVERED": return "border-green-100 bg-green-50 text-green-700";
             case "CANCELLED": return "border-red-100 bg-red-50 text-red-700";
             default: return "border-slate-200 bg-slate-50 text-slate-600";
@@ -152,7 +155,7 @@ function AdminOrdersPage() {
                     : null;
 
         return orders.filter((order) => {
-            const matchesStatus = statusFilter === "ALL" || order.status === statusFilter;
+            const matchesStatus = statusFilter === "ALL" || normalizeStatus(order.status) === statusFilter;
             if (!matchesStatus) return false;
             if (!cutoff) return true;
             const createdAt = new Date(order.createdAt);
@@ -169,7 +172,7 @@ function AdminOrdersPage() {
 
     const getOrderId = (order) => order.id || order.orderNumber;
     const getStatusDraft = (order) => statusDrafts[getOrderId(order)] ?? order.status ?? "PLACED";
-    const getAllowedStatuses = (order) => ALLOWED_STATUS_TRANSITIONS[order.status] ?? [];
+    const getAllowedStatuses = (order) => ALLOWED_STATUS_TRANSITIONS[normalizeStatus(order.status)] ?? [];
     const setStatusDraft = (order, status) => {
         const id = getOrderId(order);
         setStatusDrafts((drafts) => ({ ...drafts, [id]: status }));
@@ -333,7 +336,7 @@ function AdminOrdersPage() {
                                                                                 </button>
                                                                                 {statusMenuOpenId === orderId && <div role="listbox" aria-labelledby={`new-status-label-${orderId}`} className="absolute left-0 top-full z-30 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-slate-900/5">{getAllowedStatuses(order).map((status) => <button key={status} type="button" role="option" aria-selected={getStatusDraft(order) === status} onClick={() => setStatusDraft(order, status)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${getStatusDraft(order) === status ? "bg-[#087E8B]/[0.08] text-[#087E8B]" : "text-slate-700 hover:bg-slate-50"}`}><span className="flex items-center gap-3"><span className={`h-2.5 w-2.5 rounded-full ${getStatusDotClass(status)}`} />{formatStatus(status)}</span>{getStatusDraft(order) === status && <Check size={16} />}</button>)}</div>}
                                                                             </div>
-                                                                            <div className="flex gap-2"><button type="button" onClick={() => prepareStatusChange(order)} disabled={statusUpdatingId === orderId} className="rounded-xl bg-[#087E8B] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#066b76] hover:shadow-md disabled:cursor-wait disabled:opacity-60">{statusUpdatingId === orderId ? "Updating..." : "Update Status"}</button><button type="button" onClick={() => cancelStatusChange(order)} disabled={statusUpdatingId === orderId} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">Cancel</button></div>
+                                                                            <div className="flex gap-2"><button type="button" onClick={() => prepareStatusChange(order)} disabled={statusUpdatingId === orderId} className="rounded-xl bg-[#087E8B] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#066b76] hover:shadow-md disabled:cursor-wait disabled:opacity-60">{statusUpdatingId === orderId ? "Updating..." : "Update Status"}</button><button type="button" onClick={() => cancelStatusChange(order)} disabled={statusUpdatingId === orderId} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">Discard changes</button></div>
                                                                         </div>
                                                                         {statusNotice[orderId] && <p className="mt-3 text-sm text-slate-500" role="status">{statusNotice[orderId]}</p>}
                                                                     </section>

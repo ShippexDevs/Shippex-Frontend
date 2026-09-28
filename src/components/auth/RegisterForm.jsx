@@ -95,8 +95,9 @@ function RegisterForm() {
       username: formData.username,
       password: formData.password,
       email: formData.email,
-      whatsappContactNo:
-        `${formData.countryCode}${formData.whatsappContactNo}`,
+      whatsappContactNo: formData.countryCode
+        ? `${formData.countryCode}${formData.whatsappContactNo}`
+        : formData.whatsappContactNo,
       designation: formData.designation,
       shipIMONumber: formData.shipIMONumber,
       shipName: formData.shipName,
@@ -149,7 +150,7 @@ function RegisterForm() {
     >
       {/* Account Details */}
 
-      <div className="rounded-3xl bg-white p-6 shadow-md">
+      <div className="rounded-3xl bg-white p-4 shadow-md sm:p-6">
 
         <h2 className="mb-6 text-xl font-bold">
           Account Details
