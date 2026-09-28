@@ -7,6 +7,8 @@ import {
     Loader2,
     Search,
     Globe2,
+    RotateCw,
+    Clock3,
 } from "lucide-react";
 
 import {
@@ -29,6 +31,10 @@ const COUNTRY_CODES = [
     { value: "", name: "Others", flag: "🌐" },
 ];
 
+const OTP_COOLDOWN_SECONDS = 30;
+const OTP_MAX_ATTEMPTS = 5;
+const OTP_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
 function PhoneNumberField({
     countryCode,
     phoneNumber,
@@ -39,15 +45,27 @@ function PhoneNumberField({
     const [otpSent, setOtpSent] = useState(false);
     const [verified, setVerified] = useState(false);
     const [otp, setOtp] = useState("");
+
     const [sendingOtp, setSendingOtp] = useState(false);
     const [verifyingOtp, setVerifyingOtp] = useState(false);
+
     const [otpMessage, setOtpMessage] = useState("");
+    const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
     const [countryDropdownOpen, setCountryDropdownOpen] =
         useState(false);
     const [countrySearch, setCountrySearch] = useState("");
 
     const dropdownRef = useRef(null);
+    const previousPhoneNumberRef = useRef(null);
+
+    // Tracks requests by phone number during this component session.
+    const sendHistoryRef = useRef({});
+    const cooldownUntilRef = useRef({});
+
+    const fullPhoneNumber = countryCode
+        ? `${countryCode}${phoneNumber}`.trim()
+        : phoneNumber.trim();
 
     const selectedCountry =
         COUNTRY_CODES.find(
@@ -64,10 +82,50 @@ function PhoneNumberField({
         countrySearch.trim().length > 0 &&
         filteredCountries.length === 0;
 
-    const fullPhoneNumber = countryCode
-        ? `${countryCode}${phoneNumber}`
-        : phoneNumber;
+    // Reset verification if the phone number changes.
+    useEffect(() => {
+        if (previousPhoneNumberRef.current !== fullPhoneNumber) {
+            const hadPreviousNumber =
+                previousPhoneNumberRef.current !== null;
 
+            previousPhoneNumberRef.current = fullPhoneNumber;
+
+            if (hadPreviousNumber) {
+                setOtpSent(false);
+                setVerified(false);
+                setOtp("");
+                setOtpMessage("");
+                onVerified?.(false);
+            }
+        }
+
+        const cooldownUntil =
+            cooldownUntilRef.current[fullPhoneNumber] || 0;
+
+        setCooldownRemaining(
+            Math.max(
+                0,
+                Math.ceil((cooldownUntil - Date.now()) / 1000)
+            )
+        );
+    }, [fullPhoneNumber, onVerified]);
+
+    // Update the cooldown countdown every second.
+    useEffect(() => {
+        if (cooldownRemaining <= 0) {
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setCooldownRemaining((remaining) =>
+                Math.max(0, remaining - 1)
+            );
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [cooldownRemaining > 0]);
+
+    // Close country dropdown when clicking outside or pressing Escape.
     useEffect(() => {
         function handleOutsideClick(event) {
             if (
@@ -108,9 +166,6 @@ function PhoneNumberField({
 
         setCountryDropdownOpen(false);
         setCountrySearch("");
-        setOtpSent(false);
-        setOtp("");
-        setOtpMessage("");
     }
 
     async function handleSendOtp() {
@@ -129,19 +184,91 @@ function PhoneNumberField({
             return;
         }
 
+        if (sendingOtp || verifyingOtp || verified) {
+            return;
+        }
+
+        const now = Date.now();
+
+        // Check the cooldown for this phone number.
+        const cooldownUntil =
+            cooldownUntilRef.current[fullPhoneNumber] || 0;
+
+        if (cooldownUntil > now) {
+            const remaining = Math.ceil(
+                (cooldownUntil - now) / 1000
+            );
+
+            setCooldownRemaining(remaining);
+            setOtpMessage(
+                `Please wait ${remaining} seconds before requesting another OTP.`
+            );
+            return;
+        }
+
+        // Keep only attempts within the last 15 minutes.
+        const previousAttempts =
+            sendHistoryRef.current[fullPhoneNumber] || [];
+
+        const recentAttempts = previousAttempts.filter(
+            (timestamp) =>
+                now - timestamp < OTP_RATE_LIMIT_WINDOW_MS
+        );
+
+        sendHistoryRef.current[fullPhoneNumber] = recentAttempts;
+
+        // Enforce the per-number request limit.
+        if (recentAttempts.length >= OTP_MAX_ATTEMPTS) {
+            const oldestAttempt = recentAttempts[0];
+
+            const retryAfterMs =
+                oldestAttempt +
+                OTP_RATE_LIMIT_WINDOW_MS -
+                now;
+
+            const retryAfterMinutes = Math.ceil(
+                retryAfterMs / 60000
+            );
+
+            setOtpMessage(
+                `You have reached the limit of ${OTP_MAX_ATTEMPTS} OTP requests for this number. Please try again in approximately ${retryAfterMinutes} minute(s).`
+            );
+            return;
+        }
+
+        // Record every request attempt, including failed requests.
+        sendHistoryRef.current[fullPhoneNumber] = [
+            ...recentAttempts,
+            now,
+        ];
+
+        const nextCooldown =
+            now + OTP_COOLDOWN_SECONDS * 1000;
+
+        cooldownUntilRef.current[fullPhoneNumber] = nextCooldown;
+
+        setCooldownRemaining(OTP_COOLDOWN_SECONDS);
         setSendingOtp(true);
         setOtpMessage("");
 
         try {
             const result = await sendOtp(fullPhoneNumber);
 
-            setOtpMessage(result.message);
+            setOtpMessage(
+                result.message ||
+                    (result.success
+                        ? "OTP sent successfully."
+                        : "Unable to send OTP.")
+            );
 
             if (result.success) {
                 setOtpSent(true);
+                setOtp("");
             }
         } catch {
-            setOtpMessage("Unable to send OTP. Please try again.");
+            setOtpMessage(
+                "Unable to send OTP. Please try again after the cooldown."
+            );
         } finally {
             setSendingOtp(false);
         }
@@ -153,24 +280,44 @@ function PhoneNumberField({
             return;
         }
 
+        if (verifyingOtp || sendingOtp) {
+            return;
+        }
+
         setVerifyingOtp(true);
         setOtpMessage("");
 
         try {
-            const result = await validateOtp(fullPhoneNumber, otp);
+            const result = await validateOtp(
+                fullPhoneNumber,
+                otp
+            );
 
-            setOtpMessage(result.message);
+            setOtpMessage(
+                result.message ||
+                    (result.success
+                        ? "OTP verified successfully."
+                        : "Invalid OTP.")
+            );
 
             if (result.success) {
                 setVerified(true);
                 onVerified?.(true);
             }
         } catch {
-            setOtpMessage("Unable to verify OTP. Please try again.");
+            setOtpMessage(
+                "Unable to verify OTP. Please try again."
+            );
         } finally {
             setVerifyingOtp(false);
         }
     }
+
+    const otpButtonDisabled =
+        sendingOtp ||
+        verifyingOtp ||
+        verified ||
+        cooldownRemaining > 0;
 
     return (
         <div className="space-y-5">
@@ -183,7 +330,7 @@ function PhoneNumberField({
                 </label>
 
                 <div className="mt-2 flex w-full min-w-0 gap-2 sm:gap-3">
-                    {/* Custom Country Selector */}
+                    {/* Country Selector */}
 
                     <div
                         ref={dropdownRef}
@@ -266,8 +413,6 @@ function PhoneNumberField({
                                     sm:w-[320px]
                                 "
                             >
-                                {/* Dropdown Header */}
-
                                 <div className="border-b border-slate-100 p-3">
                                     <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
                                         Select country
@@ -301,8 +446,6 @@ function PhoneNumberField({
                                         />
                                     </div>
                                 </div>
-
-                                {/* Country Options */}
 
                                 <div
                                     role="listbox"
@@ -354,8 +497,6 @@ function PhoneNumberField({
                                             </button>
                                         );
                                     })}
-
-                                    {/* No Match Found */}
 
                                     {noCountryFound && (
                                         <div className="space-y-3 p-3">
@@ -425,8 +566,6 @@ function PhoneNumberField({
                                     )}
                                 </div>
 
-                                {/* Dropdown Footer */}
-
                                 <div className="border-t border-slate-100 bg-slate-50 px-3 py-2">
                                     <p className="text-xs text-slate-400">
                                         {COUNTRY_CODES.length} options available
@@ -490,42 +629,63 @@ function PhoneNumberField({
                 )}
             </div>
 
-            {/* Send OTP */}
+            {/* Send / Resend OTP */}
 
-            {!otpSent && (
-                <button
-                    type="button"
-                    disabled={sendingOtp || verified}
-                    onClick={handleSendOtp}
-                    className="
-                        flex
-                        w-full
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-2xl
-                        bg-[#0A2342]
-                        py-3
-                        font-semibold
-                        text-white
-                        transition
-                        hover:bg-[#123B68]
-                        disabled:cursor-not-allowed
-                        disabled:opacity-60
-                    "
-                >
-                    {sendingOtp ? (
-                        <>
-                            <Loader2
-                                size={18}
-                                className="animate-spin"
-                            />
-                            Sending...
-                        </>
-                    ) : (
-                        "Send OTP"
+            {!verified && (
+                <div className="space-y-2">
+                    <button
+                        type="button"
+                        disabled={otpButtonDisabled}
+                        onClick={handleSendOtp}
+                        className="
+                            flex
+                            w-full
+                            items-center
+                            justify-center
+                            gap-2
+                            rounded-2xl
+                            bg-[#0A2342]
+                            py-3
+                            font-semibold
+                            text-white
+                            transition
+                            hover:bg-[#123B68]
+                            disabled:cursor-not-allowed
+                            disabled:opacity-60
+                        "
+                    >
+                        {sendingOtp ? (
+                            <>
+                                <Loader2
+                                    size={18}
+                                    className="animate-spin"
+                                />
+                                Sending OTP...
+                            </>
+                        ) : cooldownRemaining > 0 ? (
+                            <>
+                                <Clock3 size={17} />
+                                {otpSent
+                                    ? `Resend OTP in ${cooldownRemaining}s`
+                                    : `Try again in ${cooldownRemaining}s`}
+                            </>
+                        ) : otpSent ? (
+                            <>
+                                <RotateCw size={17} />
+                                Resend OTP
+                            </>
+                        ) : (
+                            "Send OTP"
+                        )}
+                    </button>
+
+                    {otpSent && !verified && (
+                        <p className="text-center text-xs leading-5 text-slate-500">
+                            Didn't receive the OTP? You can request another
+                            one when the countdown finishes. 
+                        </p>
                     )}
-                </button>
+                </div>
             )}
 
             {/* Verify OTP */}
@@ -562,7 +722,9 @@ function PhoneNumberField({
                     <button
                         type="button"
                         disabled={
-                            verifyingOtp || otp.length !== 6
+                            verifyingOtp ||
+                            sendingOtp ||
+                            otp.length !== 6
                         }
                         onClick={handleVerifyOtp}
                         className="
@@ -633,6 +795,7 @@ function PhoneNumberField({
                         bg-slate-50
                         p-3
                         text-sm
+                        leading-5
                         text-slate-600
                     "
                 >
