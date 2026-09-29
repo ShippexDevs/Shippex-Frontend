@@ -13,6 +13,11 @@ import {
 } from "lucide-react";
 
 import adminAxios from "../services/adminAxios.js";
+import PaginationControls from "../../components/common/PaginationControls";
+import DistributionCard from "../components/dashboard/DistributionCard";
+import { getDashboardWidgets } from "../services/dashboardApi";
+
+const PAGE_SIZE = 10;
 
 const ORDER_STATUSES = [
     "PLACED",
@@ -43,6 +48,8 @@ function Detail({ label, value }) {
 
 function AdminOrdersPage() {
     const [orders, setOrders] = useState([]);
+    const [orderSummary, setOrderSummary] = useState(null);
+    const [offset, setOffset] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [expandedOrderId, setExpandedOrderId] = useState(null);
@@ -58,8 +65,18 @@ function AdminOrdersPage() {
         try {
             setLoading(true);
             setError("");
-            const response = await adminAxios.get("/api/admin/orders");
+            const [ordersResult, summaryResult] = await Promise.allSettled([
+                adminAxios.get("/api/admin/orders", { params: { offset, limit: PAGE_SIZE } }),
+                getDashboardWidgets(),
+            ]);
+            if (ordersResult.status === "rejected") throw ordersResult.reason;
+            const response = ordersResult.value;
             const fetchedOrders = response.data?.data || [];
+            if (summaryResult.status === "fulfilled") {
+                setOrderSummary(summaryResult.value);
+            } else {
+                console.error("Failed to load order summary:", summaryResult.reason);
+            }
             setOrders(
                 [...fetchedOrders].sort((a, b) => {
                     const dateA = new Date(a.createdAt || 0).getTime();
@@ -78,7 +95,7 @@ function AdminOrdersPage() {
 
     useEffect(() => {
         fetchOrders();
-    }, []);
+    }, [offset]);
 
     useEffect(() => {
         if (expandedOrderId === null) return undefined;
@@ -168,6 +185,7 @@ function AdminOrdersPage() {
     const clearFilters = () => {
         setStatusFilter("ALL");
         setDateFilter("ALL");
+        setOffset(0);
     };
 
     const getOrderId = (order) => order.id || order.orderNumber;
@@ -215,6 +233,12 @@ function AdminOrdersPage() {
             ));
             setStatusDrafts((drafts) => ({ ...drafts, [id]: updatedStatus }));
             setStatusNotice((notices) => ({ ...notices, [id]: "Order status updated successfully." }));
+            try {
+                const summary = await getDashboardWidgets();
+                setOrderSummary(summary);
+            } catch (summaryError) {
+                console.error("Failed to refresh order summary:", summaryError);
+            }
         } catch (updateError) {
             console.error("Failed to update order status:", updateError);
             setStatusNotice((notices) => ({
@@ -245,12 +269,12 @@ function AdminOrdersPage() {
                             {filterOpen && (
                                 <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-4 shadow-xl">
                                     <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="order-status-filter">Order Status</label>
-                                    <select id="order-status-filter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#087E8B]">
+                                    <select id="order-status-filter" value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setOffset(0); }} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#087E8B]">
                                         <option value="ALL">All</option>
                                         {ORDER_STATUSES.map((status) => <option key={status} value={status}>{formatStatus(status)}</option>)}
                                     </select>
                                     <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="order-date-filter">Date Range</label>
-                                    <select id="order-date-filter" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#087E8B]">
+                                    <select id="order-date-filter" value={dateFilter} onChange={(event) => { setDateFilter(event.target.value); setOffset(0); }} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#087E8B]">
                                         <option value="ALL">All Time</option>
                                         <option value="TODAY">Today</option>
                                         <option value="LAST_7_DAYS">Last 7 Days</option>
@@ -283,12 +307,19 @@ function AdminOrdersPage() {
                     </div>
                 )}
 
+                {!error && orderSummary && (
+                    <section className="mb-6">
+                        <DistributionCard
+                            title="Orders by Status"
+                            subtitle="Full order status breakdown"
+                            data={orderSummary.orderStatusDistribution || []}
+                            total={orderSummary.orders?.total ?? 0}
+                        />
+                    </section>
+                )}
+
                 {!loading && !error && orders.length > 0 && (
                     <div className="space-y-4">
-                        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{hasFilters ? "Matching Orders" : "Total Orders"}</p>
-                            <p className="mt-1 text-2xl font-bold text-slate-900">{filteredOrders.length}</p>
-                        </div>
                         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[1100px] text-left">
@@ -375,6 +406,9 @@ function AdminOrdersPage() {
                             </div>
                         </div>
                     </div>
+                )}
+                {!loading && !error && (orders.length > 0 || offset > 0) && (
+                    <PaginationControls offset={offset} limit={PAGE_SIZE} count={orders.length} onPageChange={setOffset} loading={loading} />
                 )}
             </main>
         </div>

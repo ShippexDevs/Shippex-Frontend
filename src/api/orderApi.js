@@ -39,7 +39,7 @@ export async function createOrder(orderData) {
     return await response.json();
 }
 
-export async function getMyOrders() {
+export async function getMyOrders(offset = 0, limit = 10) {
     const token = localStorage.getItem("shippex_token");
 
     if (!token) {
@@ -47,7 +47,7 @@ export async function getMyOrders() {
     }
 
     const response = await fetch(
-        `${API_BASE_URL}/api/v1/orders/me`,
+        `${API_BASE_URL}/api/v1/orders/me?offset=${offset}&limit=${limit}`,
         {
             method: "GET",
             headers: {

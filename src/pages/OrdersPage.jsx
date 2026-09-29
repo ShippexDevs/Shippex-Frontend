@@ -11,12 +11,16 @@ import { useNavigate } from "react-router-dom";
 
 import MobileLayout from "../layouts/MobileLayout";
 import { getMyOrders } from "../api/orderApi.js";
+import PaginationControls from "../components/common/PaginationControls.jsx";
+
+const PAGE_SIZE = 10;
 
 function OrdersPage() {
 
     const navigate = useNavigate();
 
     const [orders, setOrders] = useState([]);
+    const [offset, setOffset] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -27,7 +31,7 @@ function OrdersPage() {
             setLoading(true);
             setError("");
 
-            const response = await getMyOrders();
+            const response = await getMyOrders(offset, PAGE_SIZE);
 
             setOrders(response?.data || []);
 
@@ -49,7 +53,7 @@ function OrdersPage() {
 
     useEffect(() => {
         fetchOrders();
-    }, []);
+    }, [offset]);
 
     const formatDate = (dateString) => {
 
@@ -454,6 +458,10 @@ function OrdersPage() {
 
                         </div>
 
+                    )}
+
+                    {!loading && !error && (orders.length > 0 || offset > 0) && (
+                        <PaginationControls offset={offset} limit={PAGE_SIZE} count={orders.length} onPageChange={setOffset} loading={loading} />
                     )}
 
                 </main>
