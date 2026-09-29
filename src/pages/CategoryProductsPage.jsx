@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 import { categories } from "../data/categories";
 import { getProductsByCategorySlug } from "../services/productApi";
@@ -7,15 +8,20 @@ import { getProductsByCategorySlug } from "../services/productApi";
 import PageHeader from "../components/common/PageHeader";
 import SearchBar from "../components/common/Searchbar";
 import ProductSection from "../components/product/ProductSection";
+import PaginationControls from "../components/common/PaginationControls";
+
+const PAGE_SIZE = 10;
 
 function CategoryProductsPage() {
   const { slug } = useParams();
+  const { user } = useAuth();
 
   const category = categories.find(
     (item) => item.slug === slug
   );
 
   const [products, setProducts] = useState([]);
+  const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
 
@@ -28,7 +34,7 @@ function CategoryProductsPage() {
         setLoading(true);
         setError(null);
 
-        const data = await getProductsByCategorySlug(slug);
+        const data = await getProductsByCategorySlug(slug, offset, PAGE_SIZE);
 
         setProducts(data);
       } catch (error) {
@@ -46,6 +52,10 @@ function CategoryProductsPage() {
     if (slug) {
       fetchProducts();
     }
+  }, [slug, offset]);
+
+  useEffect(() => {
+    setOffset(0);
   }, [slug]);
 
   /*
@@ -301,6 +311,10 @@ function CategoryProductsPage() {
               showHeader={false}
             />
           )}
+
+        {user && !loading && !error && (products.length > 0 || offset > 0) && (
+          <PaginationControls offset={offset} limit={PAGE_SIZE} count={products.length} onPageChange={setOffset} loading={loading} />
+        )}
 
       </div>
     </div>

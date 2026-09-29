@@ -1,9 +1,10 @@
 import axiosClient from "../api/axiosClient.js";
 
-export const getFeaturedProducts = async () => {
+export const getFeaturedProducts = async (offset = 0, limit = 10) => {
 
   const response = await axiosClient.get(
-    "/api/v1/products/featured"
+    "/api/v1/products/featured",
+    { params: { offset, limit } }
   );
 
   return response.data.map((product) => ({
@@ -29,10 +30,11 @@ export const getFeaturedProducts = async () => {
 
 };
 
-export const getProductsByCategorySlug = async (categorySlug) => {
+export const getProductsByCategorySlug = async (categorySlug, offset = 0, limit = 10) => {
 
   const response = await axiosClient.get(
-    `/api/v1/products/category/${categorySlug}`
+    `/api/v1/products/category/${categorySlug}`,
+    { params: { offset, limit } }
   );
 
   return response.data.map((product) => ({
