@@ -1,4 +1,4 @@
-const designations = [
+export const DESIGNATIONS = [
   "MASTER",
   "CHIEF_OFFICER",
   "SECOND_OFFICER",
@@ -63,7 +63,7 @@ function DesignationDropdown({
           Select Designation
         </option>
 
-        {designations.map((designation) => (
+        {DESIGNATIONS.map((designation) => (
           <option
             key={designation}
             value={designation}

@@ -11,22 +11,16 @@ import { toast } from "react-hot-toast";
 import MetricCard from "../components/dashboard/MetricCard"; 
 import OrdersOverviewChart from "../components/dashboard/OrderOverviewChart.jsx"; 
 import DistributionCard from "../components/dashboard/DistributionCard"; 
-import RecentOrders from "../components/dashboard/RecentActivity.jsx"; 
-import RecentActivity from "../components/dashboard/RecentActivity";
 
 import {
     getDashboardWidgets,
     getDashboardOverview,
-    getRecentOrders,
-    getRecentActivity,
 } from "../services/dashboardApi";
 
 function AdminHomePage() {
 
     const [widgets, setWidgets] = useState(null);
     const [overview, setOverview] = useState([]);
-    const [orders, setOrders] = useState([]);
-    const [activity, setActivity] = useState([]);
 
     const [days, setDays] = useState(30);
 
@@ -49,16 +43,9 @@ function AdminHomePage() {
 
             setError("");
 
-            const [
-                widgetData,
-                overviewData,
-                orderData,
-                activityData,
-            ] = await Promise.all([
+            const [widgetData, overviewData] = await Promise.all([
                 getDashboardWidgets(),
                 getDashboardOverview(overviewDays),
-                getRecentOrders(30),
-                getRecentActivity(30),
             ]);
 
             setWidgets(widgetData);
@@ -66,18 +53,6 @@ function AdminHomePage() {
             setOverview(
                 Array.isArray(overviewData)
                     ? overviewData
-                    : []
-            );
-
-            setOrders(
-                Array.isArray(orderData)
-                    ? orderData
-                    : []
-            );
-
-            setActivity(
-                Array.isArray(activityData)
-                    ? activityData
                     : []
             );
 
@@ -348,7 +323,6 @@ function AdminHomePage() {
                         gap-4
                         lg:mt-5
                         lg:gap-5
-                        2xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]
                     "
                 >
 
@@ -357,12 +331,6 @@ function AdminHomePage() {
                             data={overview}
                             days={days}
                             setDays={setDays}
-                        />
-                    </div>
-
-                    <div className="min-w-0">
-                        <RecentOrders
-                            orders={orders}
                         />
                     </div>
 
@@ -404,16 +372,6 @@ function AdminHomePage() {
                             }
                         />
                     </div>
-
-                </div>
-
-                {/* Activity */}
-
-                <div className="mt-4 min-w-0 lg:mt-5">
-
-                    <RecentActivity
-                        activity={activity}
-                    />
 
                 </div>
 
