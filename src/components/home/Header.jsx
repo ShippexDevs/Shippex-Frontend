@@ -15,7 +15,7 @@ import LogoutConfirmModal from "../common/LogoutConfirmModal";
 
 function Header() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -27,6 +27,7 @@ function Header() {
 
   const handleLogoutClick = () => {
     setMenuOpen(false);
+    if (!user) return;
     setLogoutModalOpen(true);
   };
 
@@ -280,7 +281,7 @@ function Header() {
 
         {/* Logout */}
 
-        <div className="border-t border-slate-200 p-4">
+        {user && <div className="border-t border-slate-200 p-4">
 
           <button
             type="button"
@@ -304,7 +305,7 @@ function Header() {
             Logout
           </button>
 
-        </div>
+        </div>}
 
       </aside>
 

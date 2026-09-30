@@ -78,6 +78,7 @@ function MobileLayout({ children }) {
   // Open confirmation modal
   const handleLogout = () => {
     setMenuOpen(false);
+    if (!user) return;
     setLogoutModalOpen(true);
   };
 
@@ -240,7 +241,7 @@ function MobileLayout({ children }) {
 
         {/* Logout */}
 
-        <div className="border-t border-white/10 p-3">
+        {user && <div className="border-t border-white/10 p-3">
 
           <button
             type="button"
@@ -269,7 +270,7 @@ function MobileLayout({ children }) {
 
           </button>
 
-        </div>
+        </div>}
 
       </aside>
 

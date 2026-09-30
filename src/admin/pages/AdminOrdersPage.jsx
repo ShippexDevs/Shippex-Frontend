@@ -14,8 +14,6 @@ import {
 
 import adminAxios from "../services/adminAxios.js";
 import PaginationControls from "../../components/common/PaginationControls";
-import DistributionCard from "../components/dashboard/DistributionCard";
-import { getDashboardWidgets } from "../services/dashboardApi";
 
 const PAGE_SIZE = 10;
 
@@ -48,7 +46,6 @@ function Detail({ label, value }) {
 
 function AdminOrdersPage() {
     const [orders, setOrders] = useState([]);
-    const [orderSummary, setOrderSummary] = useState(null);
     const [offset, setOffset] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -65,18 +62,8 @@ function AdminOrdersPage() {
         try {
             setLoading(true);
             setError("");
-            const [ordersResult, summaryResult] = await Promise.allSettled([
-                adminAxios.get("/api/admin/orders", { params: { offset, limit: PAGE_SIZE } }),
-                getDashboardWidgets(),
-            ]);
-            if (ordersResult.status === "rejected") throw ordersResult.reason;
-            const response = ordersResult.value;
+            const response = await adminAxios.get("/api/admin/orders", { params: { offset, limit: PAGE_SIZE } });
             const fetchedOrders = response.data?.data || [];
-            if (summaryResult.status === "fulfilled") {
-                setOrderSummary(summaryResult.value);
-            } else {
-                console.error("Failed to load order summary:", summaryResult.reason);
-            }
             setOrders(
                 [...fetchedOrders].sort((a, b) => {
                     const dateA = new Date(a.createdAt || 0).getTime();
@@ -233,12 +220,6 @@ function AdminOrdersPage() {
             ));
             setStatusDrafts((drafts) => ({ ...drafts, [id]: updatedStatus }));
             setStatusNotice((notices) => ({ ...notices, [id]: "Order status updated successfully." }));
-            try {
-                const summary = await getDashboardWidgets();
-                setOrderSummary(summary);
-            } catch (summaryError) {
-                console.error("Failed to refresh order summary:", summaryError);
-            }
         } catch (updateError) {
             console.error("Failed to update order status:", updateError);
             setStatusNotice((notices) => ({
@@ -305,17 +286,6 @@ function AdminOrdersPage() {
                         <h2 className="mt-5 text-lg font-bold text-slate-800">No orders found</h2>
                         <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">There are currently no customer orders to display.</p>
                     </div>
-                )}
-
-                {!error && orderSummary && (
-                    <section className="mb-6">
-                        <DistributionCard
-                            title="Orders by Status"
-                            subtitle="Full order status breakdown"
-                            data={orderSummary.orderStatusDistribution || []}
-                            total={orderSummary.orders?.total ?? 0}
-                        />
-                    </section>
                 )}
 
                 {!loading && !error && orders.length > 0 && (
