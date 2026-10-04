@@ -1,35 +1,38 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
-import HomePage from "../pages/HomePage";
-import CategoriesPage from "../pages/CategoriesPage";
-import CategoryProductsPage from "../pages/CategoryProductsPage";
-import ProductDetailsPage from "../pages/ProductDetailsPage";
-import CartPage from "../pages/CartPage";
-import OrdersPage from "../pages/OrdersPage";
-import OrderDetailsPage from "../pages/OrderDetailsPage";
-import ProfilePage from "../pages/ProfilePage";
-import CheckoutPage from "../pages/CheckoutPage";
-import RequestSubmittedPage from "../pages/RequestSubmittedPage";
-import RequestTrackingPage from "../pages/RequestTrackingPage";
-import RegisterPage from "../pages/RegisterPage";
-import LoginPage from "../pages/LoginPage";
+const HomePage = lazy(() => import("../pages/HomePage"));
+const CategoriesPage = lazy(() => import("../pages/CategoriesPage"));
+const CategoryProductsPage = lazy(() => import("../pages/CategoryProductsPage"));
+const ProductDetailsPage = lazy(() => import("../pages/ProductDetailsPage"));
+const CartPage = lazy(() => import("../pages/CartPage"));
+const OrdersPage = lazy(() => import("../pages/OrdersPage"));
+const OrderDetailsPage = lazy(() => import("../pages/OrderDetailsPage"));
+const ProfilePage = lazy(() => import("../pages/ProfilePage"));
+const CheckoutPage = lazy(() => import("../pages/CheckoutPage"));
+const RequestSubmittedPage = lazy(() => import("../pages/RequestSubmittedPage"));
+const RequestTrackingPage = lazy(() => import("../pages/RequestTrackingPage"));
+const RegisterPage = lazy(() => import("../pages/RegisterPage"));
+const LoginPage = lazy(() => import("../pages/LoginPage"));
+const ForgotPasswordPage = lazy(() => import("../pages/ForgotPasswordPage"));
 
 import ProtectedRoute from "../components/auth/ProtectedRoutes";
 import ScrollToTop from "../components/common/ScrollToTop";
 
-import AdminLoginPage from "../admin/pages/AdminLoginPage";
-import AdminHomePage from "../admin/pages/AdminHomePage";
-import ChangePasswordPage from "../admin/pages/ChangePasswordPage";
+const AdminLoginPage = lazy(() => import("../admin/pages/AdminLoginPage"));
+const AdminHomePage = lazy(() => import("../admin/pages/AdminHomePage"));
+const ChangePasswordPage = lazy(() => import("../admin/pages/ChangePasswordPage"));
 import AdminProtectedRoute from "../admin/components/auth/AdminProtectedRoute";
 import AdminLayout from "../admin/components/layout/AdminLayout";
-import AdminOrdersPage from "../admin/pages/AdminOrdersPage";
-import AdminUsersPage from "../admin/pages/AdminUsersPage";
+const AdminOrdersPage = lazy(() => import("../admin/pages/AdminOrdersPage"));
+const AdminUsersPage = lazy(() => import("../admin/pages/AdminUsersPage"));
 
 function AppRoutes() {
     return (
         <>
             <ScrollToTop />
 
+            <Suspense fallback={<div role="status" aria-live="polite" className="flex min-h-[55vh] items-center justify-center gap-3 text-sm font-medium text-slate-500"><span aria-hidden="true" className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-[#087E8B]" />Loading page…</div>}>
             <Routes>
                 {/* =========================
                     Public Routes
@@ -63,6 +66,11 @@ function AppRoutes() {
                 <Route
                     path="/login"
                     element={<LoginPage />}
+                />
+
+                <Route
+                    path="/forgot-password"
+                    element={<ForgotPasswordPage />}
                 />
 
                 {/* =========================
@@ -146,6 +154,7 @@ function AppRoutes() {
                     />
                 </Route>
             </Routes>
+            </Suspense>
         </>
     );
 }

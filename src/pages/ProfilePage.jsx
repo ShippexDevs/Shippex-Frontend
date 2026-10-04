@@ -9,7 +9,9 @@ import toast from "react-hot-toast";
 import MobileLayout from "../layouts/MobileLayout";
 import { useAuth } from "../context/AuthContext";
 import LogoutConfirmModal from "../components/common/LogoutConfirmModal";
+import ConfirmationModal from "../components/common/ConfirmationModal";
 import { DESIGNATIONS } from "../components/auth/DesignationDropdown";
+import CountryPhoneInput, { toInternationalPhone } from "../components/auth/CountryPhoneInput";
 import { changeAppUserPassword, generateOtp, updateAppUserMeField } from "../api/authApi";
 
 const editableFields = [
@@ -26,7 +28,9 @@ function ProfilePage() {
   const navigate = useNavigate();
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [pendingEdit, setPendingEdit] = useState(null);
   const [value, setValue] = useState("");
+  const [phoneCountryCode, setPhoneCountryCode] = useState("+91");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpSending, setOtpSending] = useState(false);
@@ -39,14 +43,21 @@ function ProfilePage() {
 
   const startEditing = (field) => {
     setEditing(field.key);
-    setValue(user[field.key] || "");
+    if (field.key === "whatsappContactNo") {
+      const storedPhone = user[field.key] || "";
+      const code = ["+880", "+380", "+66", "+60", "+62", "+94", "+91", "+65", "+95", "+7", "+86"].find((item) => storedPhone.startsWith(item)) || "";
+      setPhoneCountryCode(code);
+      setValue(code ? storedPhone.slice(code.length).replace(/\D/g, "") : storedPhone);
+    } else {
+      setValue(user[field.key] || "");
+    }
     setOtp("");
     setOtpSent(false);
   };
 
   const sendWhatsappOtp = async () => {
-    const phoneNumber = value.trim();
-    if (!phoneNumber) return toast.error("Enter a WhatsApp number first.");
+    const phoneNumber = toInternationalPhone(phoneCountryCode, value);
+    if (!/^\+[1-9]\d{7,14}$/.test(phoneNumber)) return toast.error("Enter a valid WhatsApp number with country code.");
     setOtpSending(true);
     try {
       await generateOtp(phoneNumber);
@@ -61,8 +72,9 @@ function ProfilePage() {
 
   const saveField = async (event) => {
     event.preventDefault();
-    const nextValue = value.trim();
+    const nextValue = editing === "whatsappContactNo" ? toInternationalPhone(phoneCountryCode, value) : value.trim();
     if (!nextValue) return toast.error(`${editableFields.find((field) => field.key === editing)?.label} is required.`);
+    if (editing === "whatsappContactNo" && !/^\+[1-9]\d{7,14}$/.test(nextValue)) return toast.error("Enter a valid WhatsApp number with country code.");
     if (editing === "whatsappContactNo" && !otpSent) return toast.error("Send an OTP before updating your WhatsApp number.");
     if (editing === "whatsappContactNo" && !otp.trim()) return toast.error("Enter the OTP sent to your new number.");
     setSaving(true);
@@ -118,8 +130,8 @@ function ProfilePage() {
           <p className="mt-1.5 text-sm text-slate-500">View and update your account and ship details.</p>
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
-          <div className="bg-[#14283D] px-6 py-7 text-white">
+        <section className="overflow-visible rounded-2xl border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+          <div className="rounded-t-2xl bg-[#14283D] px-5 py-6 text-white sm:px-6 sm:py-7">
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-xl font-bold">{user.name?.charAt(0)?.toUpperCase() || "U"}</div>
               <div>
@@ -131,7 +143,7 @@ function ProfilePage() {
 
           <div className="grid grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
             {editableFields.map((field) => (
-              <ProfileField key={field.key} field={field} value={user[field.key]} editing={editing === field.key} draft={value} setDraft={setValue} saving={saving} otp={otp} setOtp={setOtp} otpSent={otpSent} otpSending={otpSending} onSendOtp={sendWhatsappOtp} onEdit={() => startEditing(field)} onSave={saveField} onCancel={() => { setEditing(null); setOtp(""); setOtpSent(false); }} />
+              <ProfileField key={field.key} field={field} value={user[field.key]} editing={editing === field.key} draft={value} setDraft={setValue} phoneCountryCode={phoneCountryCode} setPhoneCountryCode={setPhoneCountryCode} saving={saving} otp={otp} setOtp={setOtp} otpSent={otpSent} otpSending={otpSending} onSendOtp={sendWhatsappOtp} onEdit={() => setPendingEdit(field)} onSave={saveField} onCancel={() => { setEditing(null); setOtp(""); setOtpSent(false); }} />
             ))}
             <ProfileField field={{ label: "Account Status", icon: ShieldCheck }} value={user.verified ? "Verified" : "Not Verified"} verified={user.verified} />
           </div>
@@ -161,12 +173,26 @@ function ProfilePage() {
 
         <button type="button" onClick={() => setLogoutModalOpen(true)} className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"><LogOut size={17} />Logout</button>
       </div>
+      <ConfirmationModal
+        open={Boolean(pendingEdit)}
+        title={`Edit ${pendingEdit?.label ?? "profile field"}?`}
+        message={`Continue to edit your ${pendingEdit?.label?.toLowerCase() ?? "profile information"}? You can review your changes before saving.`}
+        confirmText="Continue to edit"
+        confirmTone="primary"
+        cancelText="Cancel"
+        onConfirm={() => {
+          const field = pendingEdit;
+          setPendingEdit(null);
+          if (field) startEditing(field);
+        }}
+        onCancel={() => setPendingEdit(null)}
+      />
       <LogoutConfirmModal open={logoutModalOpen} onCancel={() => setLogoutModalOpen(false)} onConfirm={handleLogoutConfirm} />
     </MobileLayout>
   );
 }
 
-function ProfileField({ field, value, verified = false, editing = false, draft, setDraft, saving, otp, setOtp, otpSent, otpSending, onSendOtp, onEdit, onSave, onCancel }) {
+function ProfileField({ field, value, verified = false, editing = false, draft, setDraft, phoneCountryCode, setPhoneCountryCode, saving, otp, setOtp, otpSent, otpSending, onSendOtp, onEdit, onSave, onCancel }) {
   const Icon = field.icon;
   return (
     <div className="flex items-start gap-3 p-5">
@@ -178,7 +204,7 @@ function ProfileField({ field, value, verified = false, editing = false, draft, 
         </div>
         {editing ? (
           <form onSubmit={onSave} className="mt-2 space-y-2">
-            <div className="flex gap-2">
+            {field.key === "whatsappContactNo" ? <CountryPhoneInput countryCode={phoneCountryCode} phoneNumber={draft} onCountryCodeChange={(code) => { setPhoneCountryCode(code); setDraft(""); }} onPhoneNumberChange={setDraft} /> : <div className="flex gap-2">
               {field.key === "designation" ? (
                 <select autoFocus value={draft} onChange={(event) => setDraft(event.target.value)} className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-sm outline-none focus:border-[#087E8B]">
                   <option value="" disabled>Select designation</option>
@@ -187,10 +213,14 @@ function ProfileField({ field, value, verified = false, editing = false, draft, 
               ) : (
                 <input autoFocus type={field.type || "text"} value={draft} onChange={(event) => setDraft(event.target.value)} className="min-w-0 flex-1 rounded-md border border-slate-200 px-2.5 py-2 text-sm outline-none focus:border-[#087E8B]" />
               )}
-              {field.key === "whatsappContactNo" && <button type="button" onClick={onSendOtp} disabled={otpSending || saving} className="shrink-0 rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-700 disabled:opacity-50">{otpSending ? "Sending…" : otpSent ? "Resend OTP" : "Send OTP"}</button>}
+
+            </div>}
+            {field.key === "whatsappContactNo" && <div className="flex gap-2">
+              <button type="button" onClick={onSendOtp} disabled={otpSending || saving} className="rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-700 disabled:opacity-50">{otpSending ? "Sending…" : otpSent ? "Resend OTP" : "Send OTP"}</button>
               <button type="submit" disabled={saving} aria-label="Save" className="rounded-md bg-emerald-50 p-2 text-emerald-700 disabled:opacity-50"><Check size={16} /></button>
               <button type="button" onClick={onCancel} aria-label="Cancel" className="rounded-md bg-slate-100 p-2 text-slate-600"><X size={16} /></button>
-            </div>
+            </div>}
+            {field.key !== "whatsappContactNo" && <div className="flex gap-2"><button type="submit" disabled={saving} aria-label="Save" className="rounded-md bg-emerald-50 p-2 text-emerald-700 disabled:opacity-50"><Check size={16} /></button><button type="button" onClick={onCancel} aria-label="Cancel" className="rounded-md bg-slate-100 p-2 text-slate-600"><X size={16} /></button></div>}
             {field.key === "whatsappContactNo" && otpSent && <input type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ""))} placeholder="Enter OTP" aria-label="OTP" className="w-full rounded-md border border-slate-200 px-2.5 py-2 text-sm outline-none focus:border-[#087E8B]" />}
           </form>
         ) : <p className="mt-1 break-words text-sm font-semibold text-slate-800">{field.key === "designation" ? value?.replaceAll("_", " ") || "-" : value || "-"}</p>}

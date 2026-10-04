@@ -26,6 +26,35 @@ export function loginUser(data) {
     data
   );
 }
+
+// AppUser account recovery and passwordless login endpoints.
+export function findAccountByUsername(username) {
+  return axiosClient.post("/api/public/forget-password", { username });
+}
+
+export function findAccountByPhone(phoneNumber) {
+  return axiosClient.post("/api/public/forget-password-by-phone", { phoneNumber });
+}
+
+export function generateOtpForUsername(username) {
+  return axiosClient.post("/api/public/generate-otp-for-username", { username });
+}
+
+export function generateOtpForPhone(phoneNumber) {
+  return axiosClient.post("/api/public/generate-otp-for-phone", { phoneNumber });
+}
+
+export function resetPasswordWithUsername(data) {
+  return axiosClient.post("/api/public/verify-otp-to-reset", data);
+}
+
+export function resetPasswordWithPhone(data) {
+  return axiosClient.post("/api/public/verify-otp-to-reset-by-phone", data);
+}
+
+export function loginWithPhoneOtp(data) {
+  return axiosClient.post("/api/public/verify-otp-to-login", data);
+}
 export function getCurrentUser() {
   return axiosClient.get("/api/appUser/me");
 }

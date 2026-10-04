@@ -4,9 +4,14 @@ function ConfirmationModal({
   message,
   confirmText = "Confirm",
   cancelText = "Cancel",
+  confirmTone = "danger",
   onConfirm,
   onCancel,
 }) {
+  const confirmToneClass = confirmTone === "primary"
+    ? "bg-[#0A2342] hover:bg-[#123B63]"
+    : "bg-red-500 hover:bg-red-600";
+
   if (!open) {
     return null;
   }
@@ -60,14 +65,15 @@ function ConfirmationModal({
 
           <button
             onClick={onConfirm}
-            className="
+            className={`
               flex-1
               rounded-2xl
-              bg-red-500
               py-3
               font-semibold
               text-white
-            "
+              transition-colors
+              ${confirmToneClass}
+            `}
           >
             {confirmText}
           </button>

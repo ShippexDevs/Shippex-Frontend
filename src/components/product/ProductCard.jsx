@@ -4,10 +4,12 @@ import { useCart } from "../../context/CartContext";
 import { formatPrice } from "../../utils/formatPrice";
 import QuantitySelector from "../product/QuantitySelector";
 import toast from "react-hot-toast";
+import { motion, useReducedMotion } from "framer-motion";
 
 function ProductCard({ product }) {
 
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
 
   const {
     addToCart,
@@ -45,8 +47,14 @@ function ProductCard({ product }) {
   };
 
   return (
-    <div
+    <motion.div
       onClick={handleCardClick}
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      whileHover={reduceMotion ? undefined : { y: -4, scale: 1.012 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.985 }}
+      transition={{ type: "spring", stiffness: 340, damping: 25, duration: 0.35 }}
       className="
         min-w-[140px]
         cursor-pointer
@@ -56,7 +64,6 @@ function ProductCard({ product }) {
         shadow-sm
         transition-all
         duration-300
-        hover:-translate-y-1
         hover:shadow-md
       "
     >
@@ -79,9 +86,11 @@ function ProductCard({ product }) {
           "
         >
 
-          <img
+          <motion.img
             src={product.image}
             alt={product.name}
+            whileHover={reduceMotion ? undefined : { scale: 1.07, rotate: 1.5 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
             className="
               h-28
               w-28
@@ -201,7 +210,7 @@ function ProductCard({ product }) {
         {product.unit}
       </p>
 
-    </div>
+    </motion.div>
   );
 }
 

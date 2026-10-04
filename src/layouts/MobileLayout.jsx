@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   Home,
   LayoutGrid,
@@ -47,12 +48,26 @@ const navigation = [
 function MobileLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const reduceMotion = useReducedMotion();
 
   const { user, logout } = useAuth();
   const { totalItems } = useCart();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
 
   const username =
     user?.name ||
@@ -98,11 +113,16 @@ function MobileLayout({ children }) {
 
       {/* Mobile overlay */}
 
+      <AnimatePresence>
       {menuOpen && (
-        <button
+        <motion.button
           type="button"
           aria-label="Close navigation"
           onClick={() => setMenuOpen(false)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.18 }}
           className="
             fixed
             inset-0
@@ -116,7 +136,15 @@ function MobileLayout({ children }) {
 
       {/* Mobile drawer */}
 
-      <aside
+      {menuOpen && <motion.aside
+        id="mobile-navigation-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        initial={{ x: reduceMotion ? 0 : -280 }}
+        animate={{ x: 0 }}
+        exit={{ x: reduceMotion ? 0 : -280 }}
+        transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
         className={`
           fixed
           inset-y-0
@@ -128,14 +156,7 @@ function MobileLayout({ children }) {
           bg-[#14283D]
           text-white
           shadow-2xl
-          transition-transform
-          duration-300
           lg:hidden
-          ${
-            menuOpen
-              ? "translate-x-0"
-              : "-translate-x-full"
-          }
         `}
       >
 
@@ -272,7 +293,8 @@ function MobileLayout({ children }) {
 
         </div>}
 
-      </aside>
+      </motion.aside>}
+      </AnimatePresence>
 
 
       {/* App User Header */}
@@ -310,6 +332,8 @@ function MobileLayout({ children }) {
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-navigation-drawer"
             className="
               rounded-xl
               p-2
@@ -400,9 +424,18 @@ function MobileLayout({ children }) {
 
       {/* Page content */}
 
-      <main className="min-h-[calc(100vh-70px)] pb-24 lg:pb-8">
-        {children}
-      </main>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.main
+          key={location.pathname}
+          initial={reduceMotion ? false : { opacity: 0, y: 9 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduceMotion ? {} : { opacity: 0, y: -5 }}
+          transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+          className="min-h-[calc(100vh-70px)] pb-24 lg:pb-8"
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
 
 
       {/* Mobile bottom navigation */}
@@ -433,12 +466,14 @@ function MobileLayout({ children }) {
             const active = isActive(item.path);
 
             return (
-              <button
+              <motion.button
                 key={item.path}
                 type="button"
                 onClick={() =>
                   handleNavigate(item.path)
                 }
+                aria-current={active ? "page" : undefined}
+                whileTap={reduceMotion ? undefined : { scale: 0.93 }}
                 aria-label={
                   item.label === "Cart" && totalItems > 0
                     ? `Cart, ${totalItems} items`
@@ -464,7 +499,9 @@ function MobileLayout({ children }) {
                 `}
               >
 
-                  <div
+                  <motion.div
+                    layout
+                    transition={{ type: "spring", stiffness: 400, damping: 28 }}
                     className={`
                       relative
                       flex
@@ -473,15 +510,12 @@ function MobileLayout({ children }) {
                       items-center
                       justify-center
                       rounded-xl
-                      transition
-                      ${
-                        active
-                          ? "bg-[#087E8B]/10"
-                          : ""
-                      }
                     `}
                   >
-                    <Icon size={18} />
+                    {active && <motion.span layoutId="mobile-active-nav" className="absolute inset-0 rounded-xl bg-[#087E8B]/10" />}
+                    <motion.span animate={active && !reduceMotion ? { y: [0, -2, 0] } : { y: 0 }} transition={{ duration: 0.25 }} className="relative z-10 flex items-center justify-center">
+                      <Icon size={18} />
+                    </motion.span>
                     {item.label === "Cart" && totalItems > 0 && (
                       <span
                         aria-hidden="true"
@@ -490,13 +524,13 @@ function MobileLayout({ children }) {
                         {totalItems > 99 ? "99+" : totalItems}
                       </span>
                     )}
-                  </div>
+                  </motion.div>
 
                 <span>
                   {item.label}
                 </span>
 
-              </button>
+              </motion.button>
             );
 
           })}
@@ -528,11 +562,15 @@ function CustomerNavItem({
 }) {
 
   const Icon = item.icon;
+  const reduceMotion = useReducedMotion();
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
+      whileHover={reduceMotion ? undefined : { x: 3 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+      transition={{ duration: 0.16 }}
       className={`
         flex
         w-full
@@ -558,7 +596,7 @@ function CustomerNavItem({
         {item.label}
       </span>
 
-    </button>
+    </motion.button>
   );
 }
 

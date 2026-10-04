@@ -1,9 +1,18 @@
 import { ArrowRight } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 function OfferBanner() {
+  const reduceMotion = useReducedMotion();
+  const navigate = useNavigate();
   return (
-    <div
+    <motion.div
+      whileHover={reduceMotion ? undefined : { y: -2 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className="
+      relative
+      isolate
+      overflow-hidden
       rounded-3xl
       bg-gradient-to-r
       from-orange-500
@@ -13,6 +22,8 @@ function OfferBanner() {
       shadow-xl
       "
     >
+      <motion.div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-16 z-0 h-52 w-52 rounded-full bg-white/15 blur-2xl" animate={reduceMotion ? undefined : { scale: [1, 1.12, 1], opacity: [0.55, 0.8, 0.55] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="relative z-10">
       <p className="text-sm">
         THIS WEEK ONLY
       </p>
@@ -25,7 +36,11 @@ function OfferBanner() {
         Selected beverages & snacks
       </p>
 
-      <button
+      <motion.button
+        type="button"
+        onClick={() => navigate("/categories")}
+        whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+        whileHover={reduceMotion ? undefined : { scale: 1.035 }}
         className="
         mt-5
         bg-white
@@ -41,9 +56,10 @@ function OfferBanner() {
       >
         Shop Now
 
-        <ArrowRight size={18} />
-      </button>
-    </div>
+        <motion.span whileHover={reduceMotion ? undefined : { x: 3 }} transition={{ duration: 0.18 }}><ArrowRight size={18} /></motion.span>
+      </motion.button>
+      </div>
+    </motion.div>
   );
 }
 
