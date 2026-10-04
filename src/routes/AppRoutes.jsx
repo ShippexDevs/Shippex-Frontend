@@ -26,6 +26,7 @@ import AdminProtectedRoute from "../admin/components/auth/AdminProtectedRoute";
 import AdminLayout from "../admin/components/layout/AdminLayout";
 const AdminOrdersPage = lazy(() => import("../admin/pages/AdminOrdersPage"));
 const AdminUsersPage = lazy(() => import("../admin/pages/AdminUsersPage"));
+const AdminProductsPage = lazy(() => import("../admin/pages/AdminProductsPage"));
 
 function AppRoutes() {
     return (
@@ -99,6 +100,10 @@ function AppRoutes() {
                         <Route
                             path="/admin/users"
                             element={<AdminUsersPage />}
+                        />
+                        <Route
+                            path="/admin/products"
+                            element={<AdminProductsPage />}
                         />
                         <Route
                             path="/admin/change-password"
