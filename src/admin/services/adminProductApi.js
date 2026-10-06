@@ -12,6 +12,19 @@ export async function getAdminProducts(offset = 0, limit = 100) {
   return Array.isArray(products) ? products : [];
 }
 
+export async function createAdminProduct(product) {
+  const response = await adminAxios.post("/api/admin/products", product);
+  return unwrap(response);
+}
+
+export async function updateAdminProduct(productId, product) {
+  const response = await adminAxios.put(
+    `/api/admin/products/${encodeURIComponent(productId)}`,
+    product
+  );
+  return unwrap(response);
+}
+
 export async function updateAdminProductStock(productId, stock) {
   const response = await adminAxios.patch(
     `/api/admin/products/${encodeURIComponent(productId)}/stock`,
