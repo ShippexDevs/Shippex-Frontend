@@ -2,15 +2,16 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import {
     getAdminToken,
-    getAdminRole
+    getAdminRole,
+    normalizeAdminRole
 } from "../../components/../services/tokenStorage.js";
 
-const AdminProtectedRoute = () => {
+const AdminProtectedRoute = ({ requiredRole }) => {
 
     const location = useLocation();
 
     const token = getAdminToken();
-    const role = getAdminRole();
+    const role = normalizeAdminRole(getAdminRole());
 
     if (!token) {
 
@@ -34,6 +35,10 @@ const AdminProtectedRoute = () => {
                 replace
             />
         );
+    }
+
+    if (requiredRole && role !== requiredRole) {
+        return <Navigate to={role === "SUPER_ADMIN" ? "/super-admin/admins" : "/admin/home"} replace />;
     }
 
     return <Outlet />;

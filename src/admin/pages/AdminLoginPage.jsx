@@ -32,7 +32,11 @@ const AdminLoginPage = () => {
 
             saveAdminAuth(response);
 
-            if (response.firstLogin) {
+            if (response.role?.toUpperCase().replace(/[\s-]+/g, "_") === "SUPER_ADMIN") {
+
+                navigate("/super-admin/admins");
+
+            } else if (response.firstLogin) {
 
                 navigate("/admin/change-password");
 

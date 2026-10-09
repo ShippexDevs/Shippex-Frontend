@@ -20,6 +20,8 @@ import ProtectedRoute from "../components/auth/ProtectedRoutes";
 import ScrollToTop from "../components/common/ScrollToTop";
 
 const AdminLoginPage = lazy(() => import("../admin/pages/AdminLoginPage"));
+const SuperAdminLoginPage = lazy(() => import("../admin/pages/SuperAdminLoginPage"));
+const SuperAdminAdminsPage = lazy(() => import("../admin/pages/SuperAdminAdminsPage"));
 const AdminHomePage = lazy(() => import("../admin/pages/AdminHomePage"));
 const ChangePasswordPage = lazy(() => import("../admin/pages/ChangePasswordPage"));
 import AdminProtectedRoute from "../admin/components/auth/AdminProtectedRoute";
@@ -82,6 +84,7 @@ function AppRoutes() {
                     path="/admin/login"
                     element={<AdminLoginPage />}
                 />
+                <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
 
                 {/* =========================
                     Protected Admin Routes
@@ -110,6 +113,10 @@ function AppRoutes() {
                             element={<ChangePasswordPage />}
                         />
                     </Route>
+                </Route>
+
+                <Route element={<AdminProtectedRoute requiredRole="SUPER_ADMIN" />}>
+                    <Route path="/super-admin/admins" element={<SuperAdminAdminsPage />} />
                 </Route>
 
                 {/* =========================

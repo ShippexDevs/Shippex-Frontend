@@ -3,6 +3,9 @@ const USERNAME_KEY = "adminUsername";
 const ROLE_KEY = "adminRole";
 const FIRST_LOGIN_KEY = "adminFirstLogin";
 
+export const normalizeAdminRole = (role) =>
+    typeof role === "string" ? role.trim().toUpperCase().replace(/[\s-]+/g, "_") : "";
+
 export const saveAdminAuth = (response) => {
 
     localStorage.setItem(
@@ -17,7 +20,7 @@ export const saveAdminAuth = (response) => {
 
     localStorage.setItem(
         ROLE_KEY,
-        response.role
+        normalizeAdminRole(response.role)
     );
 
     localStorage.setItem(
