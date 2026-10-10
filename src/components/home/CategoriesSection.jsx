@@ -1,13 +1,18 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "../../data/categories";
 import CategoryCard from "./CategoryCard";
+import { getCategories } from "../../services/categoryApi";
+import { Package } from "lucide-react";
 
 const HOME_CATEGORY_LIMIT = 6;
 
 function CategoriesSection() {
   const navigate = useNavigate();
+  const [items, setItems] = useState(categories);
+  useEffect(() => { getCategories().then(setItems).catch(() => {}); }, []);
 
-  const visibleCategories = categories.slice(
+  const visibleCategories = items.slice(
     0,
     HOME_CATEGORY_LIMIT
   );
@@ -49,7 +54,7 @@ function CategoriesSection() {
         {visibleCategories.map((category) => (
           <CategoryCard
             key={category.id}
-            icon={category.icon}
+            icon={category.icon || Package}
             name={category.name}
             onClick={() =>
               navigate(`/categories/${category.slug}`)

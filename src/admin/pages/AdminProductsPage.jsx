@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Info, Package, Plus, RefreshCw, Search, Star, ToggleLeft, Pencil, X } from "lucide-react";
+import { Info, Package, Plus, RefreshCw, Search, Star, ToggleLeft, Pencil, X, Sparkles } from "lucide-react";
 import {
   createAdminProduct,
   getAdminProducts,
@@ -8,6 +8,7 @@ import {
   updateAdminProductFeatured,
   updateAdminProductStock,
 } from "../services/adminProductApi";
+import { generateAdminProductTags, getAdminCategories, getAdminCategoryNextSku } from "../services/adminCategoryApi";
 
 const PAGE_SIZE = 12;
 
@@ -25,6 +26,7 @@ function AdminProductsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
   const [formError, setFormError] = useState("");
+  const [categories, setCategories] = useState([]);
   const productCategories = useMemo(() => {
     const found = new Map();
     products.forEach((product) => {
@@ -60,6 +62,7 @@ function AdminProductsPage() {
 
   useEffect(() => {
     loadProducts();
+    getAdminCategories().then(setCategories).catch(() => setCategories([]));
   }, []);
 
   const visibleProducts = useMemo(() => {
@@ -177,7 +180,7 @@ function AdminProductsPage() {
           </div>
         </header>
 
-        {formOpen && <ProductForm product={editingProduct} saving={savingProduct} error={formError} onCancel={() => { setFormOpen(false); setEditingProduct(null); setFormError(""); }} onSave={saveProduct} />}
+        {formOpen && <ProductForm product={editingProduct} categories={categories} saving={savingProduct} error={formError} onCancel={() => { setFormOpen(false); setEditingProduct(null); setFormError(""); }} onSave={saveProduct} />}
 
         <div className="mb-4 rounded-xl border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-950">
           <p className="flex items-start gap-2"><Info size={17} className="mt-0.5 shrink-0" /><span>Stock changes save immediately. Featured and active settings control whether products are promoted or visible to customers.</span></p>
@@ -227,7 +230,7 @@ const emptyProductForm = {
   stock: "0", featured: false, active: false, displayOrder: "0", deliveryTime: "24hours", tags: "",
 };
 
-function ProductForm({ product, saving, error, onCancel, onSave }) {
+function ProductForm({ product, categories, saving, error, onCancel, onSave }) {
   const [values, setValues] = useState(() => product ? {
     ...emptyProductForm,
     ...product,
@@ -237,11 +240,14 @@ function ProductForm({ product, saving, error, onCancel, onSave }) {
     originalPrice: product.originalPrice ?? "",
     stock: product.stock ?? 0,
     displayOrder: product.displayOrder ?? 0,
-  } : { ...emptyProductForm, images: [""] });
+    categoryId: product.categoryId || "",
+  } : { ...emptyProductForm, images: [""], categoryId: "" });
+  const [skuPreview, setSkuPreview] = useState("");
+  const [tagLoading, setTagLoading] = useState(false);
+  const [tagError, setTagError] = useState("");
   const fields = [
     ["name", "Product name", "text", true], ["brand", "Brand", "text", true],
-    ["sku", "SKU", "text", !product], ["category", "Category name", "text", true],
-    ["categorySlug", "Category slug", "text", true], ["currency", "Currency", "text", true],
+    ["currency", "Currency", "text", true],
     ["currentPrice", "Current price", "number", true], ["originalPrice", "Original price", "number", false],
     ["unit", "Unit (e.g. kg, each)", "text", !product], ["stock", "Stock", "number", !product],
     ["displayOrder", "Display order", "number", false], ["deliveryTime", "Delivery time", "text", false],
@@ -251,7 +257,8 @@ function ProductForm({ product, saving, error, onCancel, onSave }) {
     event.preventDefault();
     const payload = {
       name: values.name.trim(), brand: values.brand.trim(), description: values.description.trim(),
-      category: values.category.trim(), categorySlug: values.categorySlug.trim(),
+      category: categories.find((category) => category.id === values.categoryId)?.name || product?.category || "",
+      categorySlug: categories.find((category) => category.id === values.categoryId)?.slug || product?.categorySlug || "",
       images: values.images.map((value) => value.trim()).filter(Boolean),
       currency: values.currency.trim().toUpperCase(), currentPrice: Number(values.currentPrice),
       originalPrice: values.originalPrice === "" ? null : Number(values.originalPrice),
@@ -260,8 +267,26 @@ function ProductForm({ product, saving, error, onCancel, onSave }) {
       deliveryTime: values.deliveryTime.trim() || null,
       tags: values.tags.split(",").map((value) => value.trim()).filter(Boolean),
     };
-    if (!product) payload.sku = values.sku.trim();
+    if (!product) payload.categoryId = values.categoryId;
     onSave(payload);
+  }
+
+  async function previewSku(categoryId) {
+    setSkuPreview("");
+    if (!categoryId) return;
+    try { const preview = await getAdminCategoryNextSku(categoryId); setSkuPreview(preview.sku); }
+    catch (e) { setSkuPreview(e.response?.data?.message || "SKU preview unavailable"); }
+  }
+  async function suggestTags() {
+    if (!values.name.trim() || !values.description.trim() || !values.categoryId) {
+      setTagError("Enter a product name, description, and category first."); return;
+    }
+    setTagLoading(true); setTagError("");
+    try {
+      const result = await generateAdminProductTags({ name: values.name.trim(), description: values.description.trim(), brand: values.brand.trim(), categoryId: values.categoryId });
+      update("tags", (result.tags || []).join(", "));
+    } catch (e) { setTagError(e.response?.data?.message || "Tag suggestions are unavailable. You can enter tags manually."); }
+    finally { setTagLoading(false); }
   }
 
   return (
@@ -269,9 +294,10 @@ function ProductForm({ product, saving, error, onCancel, onSave }) {
       <div className="mb-5 flex items-start justify-between gap-3"><div><h2 className="text-lg font-bold text-slate-900">{product ? "Update product" : "Add a product"}</h2><p className="mt-1 text-sm text-slate-500">Fields marked required are validated by the product API.</p></div><button type="button" onClick={onCancel} aria-label="Close form" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={18} /></button></div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {fields.map(([key, label, type, required]) => <label key={key} className="block"><span className="mb-1.5 block text-sm font-medium text-slate-700">{label}{required && <span className="text-red-600"> *</span>}</span><input required={required} readOnly={key === "sku" && Boolean(product)} type={type} min={type === "number" ? 0 : undefined} step={key.includes("Price") ? "0.01" : type === "number" ? "1" : undefined} value={values[key] ?? ""} onChange={(event) => update(key, event.target.value)} className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-[#087E8B] focus:ring-2 focus:ring-[#087E8B]/10 read-only:bg-slate-50" /></label>)}
+        <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-700">Category <span className="text-red-600">*</span></span><select required value={values.categoryId} disabled={Boolean(product)} onChange={(event) => { update("categoryId", event.target.value); previewSku(event.target.value); }} className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#087E8B] disabled:bg-slate-50"><option value="">Select a category</option>{categories.filter((category) => category.active || category.id === values.categoryId).map((category) => <option key={category.id} value={category.id}>{category.name}{category.active ? "" : " (inactive)"}</option>)}</select>{product && <span className="mt-1 block text-xs text-slate-500">Category changes are managed from the category records; this product keeps its stored category snapshot.</span>}{!product && <span className="mt-1 block text-xs text-slate-500">{skuPreview ? `Next SKU preview: ${skuPreview}` : "SKU is generated when the product is created."}</span>}</label>
         <label className="block sm:col-span-2 lg:col-span-3"><span className="mb-1.5 block text-sm font-medium text-slate-700">Description {!product && <span className="text-red-600">*</span>}</span><textarea required={!product} rows={3} value={values.description} onChange={(event) => update("description", event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#087E8B] focus:ring-2 focus:ring-[#087E8B]/10" /></label>
         <div className="block sm:col-span-2"><span className="mb-1.5 block text-sm font-medium text-slate-700">Product photo links <span className="text-red-600">* At least one required</span></span><div className="space-y-2">{values.images.map((image, index) => <div key={index} className="flex gap-2"><input type="url" required={values.images.every((item) => !item.trim()) && index === 0} aria-label={`Photo link ${index + 1}`} placeholder="https://example.com/photo.jpg" value={image} onChange={(event) => setValues((current) => ({ ...current, images: current.images.map((item, itemIndex) => itemIndex === index ? event.target.value : item) }))} className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-[#087E8B] focus:ring-2 focus:ring-[#087E8B]/10" />{values.images.length > 1 && <button type="button" aria-label={`Remove photo link ${index + 1}`} onClick={() => setValues((current) => ({ ...current, images: current.images.filter((_, itemIndex) => itemIndex !== index) }))} className="rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-600 hover:bg-slate-50">Remove</button>}</div>)}</div><button type="button" onClick={() => setValues((current) => ({ ...current, images: [...current.images, ""] }))} className="mt-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">+ Add another photo link</button></div>
-        <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-700">Tags (comma separated)</span><input value={values.tags} onChange={(event) => update("tags", event.target.value)} className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-[#087E8B] focus:ring-2 focus:ring-[#087E8B]/10" /></label>
+        <div className="block"><span className="mb-1.5 block text-sm font-medium text-slate-700">Tags (comma separated)</span><div className="flex gap-2"><input value={values.tags} onChange={(event) => update("tags", event.target.value)} className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-[#087E8B] focus:ring-2 focus:ring-[#087E8B]/10" /><button type="button" disabled={tagLoading} onClick={suggestTags} className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"><Sparkles size={15} />{tagLoading ? "Suggesting…" : "Suggest"}</button></div>{tagError && <p role="status" className="mt-1 text-xs text-amber-700">{tagError}</p>}</div>
         <div className="flex flex-wrap gap-5 sm:col-span-2 lg:col-span-3">{[["featured", "Featured"], ["active", "Active / visible"]].map(([key, label]) => <label key={key} className="inline-flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" checked={Boolean(values[key])} onChange={(event) => update(key, event.target.checked)} className="h-4 w-4 accent-[#087E8B]" />{label}</label>)}</div>
       </div>
       {error && <p role="alert" className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

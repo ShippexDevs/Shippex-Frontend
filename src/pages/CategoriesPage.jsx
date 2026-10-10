@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import MobileLayout from "../layouts/MobileLayout";
@@ -5,9 +6,13 @@ import { categories } from "../data/categories";
 
 import CategoryCard from "../components/home/CategoryCard";
 import PageHeader from "../components/common/PageHeader";
+import { getCategories } from "../services/categoryApi";
+import { Package } from "lucide-react";
 
 function CategoriesPage() {
   const navigate = useNavigate();
+  const [items, setItems] = useState(categories);
+  useEffect(() => { getCategories().then(setItems).catch(() => {}); }, []);
 
   return (
     <MobileLayout>
@@ -33,10 +38,10 @@ function CategoriesPage() {
           "
         >
 
-          {categories.map((category) => (
+          {items.map((category) => (
             <CategoryCard
               key={category.id}
-              icon={category.icon}
+              icon={category.icon || Package}
               name={category.name}
               onClick={() =>
                 navigate(
